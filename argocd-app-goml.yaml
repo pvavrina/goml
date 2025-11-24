@@ -1,0 +1,28 @@
+# argocd-app-goml.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: go-ml-service
+  # Deploy the Application manifest into the argocd namespace
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # Source repository containing the Kubernetes manifests
+    repoURL: https://github.com/pvavrina/goml.git
+    targetRevision: HEAD
+    # Path inside the repository where manifests are located
+    path: k8s/go-service
+  destination:
+    # Target cluster (The current cluster where ArgoCD is running - Leon)
+    server: https://kubernetes.default.svc
+    # Target namespace where resources will be created
+    namespace: go-mlops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    # Automatically create the 'go-mlops' namespace if it doesn't exist
+    - CreateNamespace=true
+# ArgoCD Application to manage the Go ML service deployment

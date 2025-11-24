@@ -1,0 +1,38 @@
+# k8s/go-service/deployment-service.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service-go-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-service-go
+  template:
+    metadata:
+      labels:
+        app: ml-service-go
+    spec:
+      containers:
+      - name: ml-service-go-container
+        # Use the image you successfully pushed to Docker Hub
+        image: vaporist/goml:v1
+        ports:
+        - containerPort: 8080
+        # Always pull the image in case of updates
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-service-go-service
+spec:
+  selector:
+    app: ml-service-go
+  # Use ClusterIP for internal exposure (we'll use Ingress later for external access)
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+# Kubernetes Manifests for the Go ML Service Deployment and internal Service
