@@ -4,6 +4,7 @@ kind: Deployment
 metadata:
   name: ml-service-go-deployment
 spec:
+  # Ensure 1 replica is always running
   replicas: 1
   selector:
     matchLabels:
@@ -15,11 +16,11 @@ spec:
     spec:
       containers:
       - name: ml-service-go-container
-        # Use the image you successfully pushed to Docker Hub
+        # Image from your Docker Hub repository
         image: vaporist/goml:v1
         ports:
         - containerPort: 8080
-        # Always pull the image in case of updates
+        # Always pull the image for potential updates or testing
         imagePullPolicy: Always
 ---
 apiVersion: v1
@@ -29,10 +30,33 @@ metadata:
 spec:
   selector:
     app: ml-service-go
-  # Use ClusterIP for internal exposure (we'll use Ingress later for external access)
+  # ClusterIP exposes the service internally within the cluster network
   type: ClusterIP
   ports:
     - protocol: TCP
+      # Service port (internal to the cluster)
       port: 80
+      # Target port on the container
       targetPort: 8080
-# Kubernetes Manifests for the Go ML Service Deployment and internal Service
+---
+# Ingress Resource for external access via Traefik
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ml-service-go-ingress
+  # No specific annotations needed for standard Traefik behavior with v1 Ingress
+spec:
+  rules:
+  # Use a distinct host for the Go service to route external traffic
+  - host: go-ml.mon-domaine.com
+    http:
+      paths:
+      - path: /
+        # PathType Prefix means / and all sub-paths are matched (e.g., /predict, /health)
+        pathType: Prefix
+        backend:
+          service:
+            name: ml-service-go-service # Target the internal service name
+            port:
+              number: 80 # Target the Service port (Port 80)
+# Final configuration: Deployment, internal Service, and external Ingress
