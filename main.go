@@ -12,8 +12,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received on path: %s", r.URL.Path)
 
 	// Simulates a Health Check response
-	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, "ML Service Go (SLES) est en cours d'exécution. Statut: OK!")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprintf(w, "ML Service Go (SLES) is running. Status: OK!")
 }
 
 func main() {
