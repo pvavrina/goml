@@ -2,6 +2,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- go-service
-- traefik
-- cert-manager
+# Traefik Resources
+- traefik/middleware-redirect.yaml
+
+# Cert-Manager Resources
+- cert-manager/issuer-selfsigned.yaml
+
+# Go Service Resources
+- go-service/deployment-service.yaml
+- go-service/service-go.yaml
+- go-service/ingress-service.yaml
