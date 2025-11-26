@@ -1,0 +1,10 @@
+# k8s/cert-manager/issuer-selfsigned.yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  # Name of the self-signed Issuer
+  name: selfsigned-issuer
+  # Place the Issuer in the same namespace as the application
+  namespace: go-mlops
+spec:
+  selfSigned: {} # This configuration tells Cert-Manager to self-sign the certificate

@@ -7,11 +7,11 @@ metadata:
   labels:
     app: ml-service-go
   annotations:
-    # 1. Use the Traefik Ingress Controller (Default K3s Class)
+    # Use the Traefik Ingress Controller (Default K3s Class)
     kubernetes.io/ingress.class: traefik
-    # 2. Annotation to request a staging certificate from Cert-Manager
-    cert-manager.io/cluster-issuer: letsencrypt-staging
-    # 3. Tells Traefik to listen on both HTTP (web) and HTTPS (websecure) entrypoints
+    # CHANGE: Use the namespace-scoped Issuer instead of ClusterIssuer (letsencrypt-staging)
+    cert-manager.io/issuer: selfsigned-issuer
+    # Tells Traefik to listen on both HTTP (web) and HTTPS (websecure) entrypoints
     traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
     # NEW ANNOTATION: Apply the HTTP to HTTPS redirection middleware
     traefik.ingress.kubernetes.io/router.middlewares: go-mlops-redirect-to-https@kubernetescrd
@@ -32,4 +32,4 @@ spec:
   - hosts:
     - goml.tuxjob.ch
     # The Secret where Cert-Manager will store the generated certificate
-    secretName: goml-tls-staging
+    secretName: goml-tls-selfsigned
