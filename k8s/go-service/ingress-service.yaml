@@ -1,0 +1,33 @@
+# k8s/go-service/ingress-service.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: go-ml-service-ingress
+  namespace: go-mlops
+  labels:
+    app: ml-service-go
+  annotations:
+    # 1. Use the Traefik Ingress Controller (Default K3s Class)
+    kubernetes.io/ingress.class: traefik
+    # 2. Annotation to request a staging certificate from Cert-Manager
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    # 3. Tells Traefik to listen on both HTTP (web) and HTTPS (websecure) entrypoints
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+spec:
+  rules:
+  - host: goml.tuxjob.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ml-service-go-service
+            port:
+              number: 8080
+  # TLS Section for HTTPS management
+  tls:
+  - hosts:
+    - goml.tuxjob.ch
+    # The Secret where Cert-Manager will store the generated certificate
+    secretName: goml-tls-staging
