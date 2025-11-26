@@ -1,0 +1,10 @@
+# k8s/traefik/middleware-redirect.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-https
+  namespace: go-mlops # Apply this middleware in the same namespace as the Ingress
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
