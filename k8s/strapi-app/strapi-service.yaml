@@ -1,0 +1,15 @@
+# strapi-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: strapi-clusterip-service
+  namespace: go-mlops
+  labels:
+    app: strapi
+spec:
+  selector:
+    app: strapi
+  ports:
+    - port: 80 # We expose it internally on port 80 for simplicity
+      targetPort: 1337 # Strapi default port
+  type: ClusterIP # Internal service only

@@ -16,6 +16,10 @@ resources:
 # Cert-Manager Resources
 - cert-manager/issuer-selfsigned.yaml
 
+# Strapi Application (NEW SECTION)
+- strapi-app/strapi-deployment.yaml
+- strapi-app/strapi-service.yaml
+
 # Go Service Resources
 - go-service/deployment-service.yaml
 - go-service/service-go.yaml

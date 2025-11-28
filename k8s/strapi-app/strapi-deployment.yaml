@@ -1,0 +1,51 @@
+# strapi-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strapi-deployment
+  namespace: go-mlops
+  labels:
+    app: strapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strapi
+  template:
+    metadata:
+      labels:
+        app: strapi
+    spec:
+      containers:
+        - name: strapi
+          # Replace 'YOUR_STRAPI_IMAGE' with the name of your Strapi Docker image (e.g., my-strapi-app:v1)
+          image: YOUR_CUSTOM_STRAPI_IMAGE:5.x
+          ports:
+            - containerPort: 1337 # Default Strapi port
+          env:
+            # --- Database Connection Settings ---
+            - name: DATABASE_HOST
+              value: postgres-clusterip-service # Service name in the go-mlops namespace
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              value: strapi # Matches the POSTGRES_DB name
+            - name: DATABASE_USERNAME
+              value: strapiuser # Matches the POSTGRES_USER name
+            # Password retrieved from the Secret created earlier (strapi-db-secret)
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-db-secret
+                  key: POSTGRES_PASSWORD
+            
+            # --- Strapi Specific Settings ---
+            - name: NODE_ENV
+              value: production
+            # Set this to 0.0.0.0 for containerized environments
+            - name: HOST
+              value: 0.0.0.0 
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
