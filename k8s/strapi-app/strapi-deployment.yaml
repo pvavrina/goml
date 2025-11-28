@@ -19,7 +19,7 @@ spec:
       containers:
         - name: strapi
           # Replace 'YOUR_STRAPI_IMAGE' with the name of your Strapi Docker image (e.g., my-strapi-app:v1)
-          image: YOUR_CUSTOM_STRAPI_IMAGE:5.x
+          image: vaporist/strapi-cms:5.x
           ports:
             - containerPort: 1337 # Default Strapi port
           env:
