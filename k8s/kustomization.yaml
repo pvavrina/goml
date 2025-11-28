@@ -8,6 +8,11 @@ resources:
 # Traefik Resources
 - traefik/middleware-redirect.yaml
 
+# PostgreSQL Database for Strapi
+- strapi-db/postgres-pvc.yaml
+- strapi-db/postgres-deployment.yaml
+- strapi-db/postgres-service.yaml
+
 # Cert-Manager Resources
 - cert-manager/issuer-selfsigned.yaml
 

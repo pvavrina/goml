@@ -1,0 +1,46 @@
+# postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: go-mlops
+  labels:
+    app: strapi-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strapi-db
+  template:
+    metadata:
+      labels:
+        app: strapi-db
+    spec:
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+      containers:
+        - name: postgres
+          image: postgres:15-alpine # Lightweight and recent version
+          ports:
+            - containerPort: 5432
+          env:
+            # Environment variables for Strapi DB connection
+            - name: POSTGRES_USER
+              value: strapiuser
+            - name: POSTGRES_DB
+              value: strapi
+            # --- Retrieve the password from the Secret ---
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-db-secret # The name of the Secret created manually
+                  key: POSTGRES_PASSWORD # The key inside the Secret
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data # Default path for persistence
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi

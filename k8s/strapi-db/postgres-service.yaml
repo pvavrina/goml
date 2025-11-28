@@ -1,0 +1,15 @@
+# postgres-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-clusterip-service
+  namespace: go-mlops
+  labels:
+    app: strapi-db
+spec:
+  selector:
+    app: strapi-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP # Internal service only

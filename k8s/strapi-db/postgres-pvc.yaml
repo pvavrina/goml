@@ -1,0 +1,13 @@
+# postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: go-mlops
+spec:
+  # ReadWriteOnce: Only one Pod can mount the volume read/write
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: 5Gi # 5 GB of storage requested
