@@ -45,6 +45,12 @@ spec:
             # Set this to 0.0.0.0 for containerized environments
             - name: HOST
               value: 0.0.0.0 
+            - name: PORT
+              value: "1337" # Ensures the application runs on the expected port
+            - name: DATABASE_CLIENT
+              value: postgres # 💡 This critical variable prevents Strapi from defaulting to SQLite
+            - name: APP_KEYS
+              value: "qUGLzbE0VqX67tUhLG+KllDWI+HL10q7kKpu22s59jo=" # ⚠️ REPLACE ME with a complex, secure key! Mandatory for production initialization.
           resources:
             requests:
               cpu: 100m
