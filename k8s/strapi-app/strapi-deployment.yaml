@@ -50,6 +50,8 @@ spec:
               value: "1337" # Ensures the application runs on the expected port
             - name: STRAPI_PUBLIC_URL
               value: https://strapi.tuxjob.ch
+            - name: APP_PROXY # Tells Strapi to trust the reverse proxy (Traefik) for headers like X-Forwarded-Proto
+              value: "true"
             - name: DATABASE_CLIENT
               value: postgres # 💡 This critical variable prevents Strapi from defaulting to SQLite
             - name: APP_KEYS
