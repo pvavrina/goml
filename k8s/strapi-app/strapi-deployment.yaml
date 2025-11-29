@@ -48,6 +48,8 @@ spec:
               value: 0.0.0.0 
             - name: PORT
               value: "1337" # Ensures the application runs on the expected port
+            - name: STRAPI_PUBLIC_URL
+              value: https://strapi.tuxjob.ch
             - name: DATABASE_CLIENT
               value: postgres # 💡 This critical variable prevents Strapi from defaulting to SQLite
             - name: APP_KEYS

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: strapi-ingress
+  namespace: go-mlops
+  labels:
+    app: strapi
+  annotations:
+    # Use the websecure entrypoint for HTTPS traffic
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure 
+spec:
+  # Use the default K3s Ingress class (Traefik)
+  ingressClassName: traefik
+  tls:
+    # Define the host and the name of the Kubernetes Secret 
+    # that holds the certificate (this Secret must be created by Cert-Manager or manually)
+    - hosts:
+        - strapi.tuxjob.ch
+      secretName: strapi-tuxjob-ch-tls 
+  rules:
+  - host: strapi.tuxjob.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: strapi-clusterip-service
+            port:
+              # Point to the service port (80) which maps to Strapi's 1337
+              number: 80
