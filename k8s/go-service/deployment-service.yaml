@@ -35,39 +35,4 @@ spec:
             # Hard limit of 128 Megabytes of Memory
             memory: "128Mi"
         # --- END OF RECOMMENDED ADDITION ---
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ml-service-go-service
-spec:
-  selector:
-    app: ml-service-go
-  # ClusterIP exposes the service internally within the cluster network
-  type: ClusterIP
-  ports:
-    - protocol: TCP
-      # Service port (internal to the cluster)
-      port: 80
-      # Target port on the container
-      targetPort: 8080
----
-# Ingress Resource for external access via Traefik
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ml-service-go-ingress
-spec:
-  rules:
-  # Hostname corrected to your domain: goml.tuxjob.ch
-  - host: goml.tuxjob.ch
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ml-service-go-service # Target the internal service name
-            port:
-              number: 80 # Target the Service port (Port 80)
-# Final configuration: Deployment (with resources), internal Service, and external Ingress
+# Final configuration: Deployment (with resources), internal Service
