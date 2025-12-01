@@ -1,0 +1,33 @@
+# k8s/angular-frontend/deployment.yaml
+# Angular Frontend Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: angular-frontend-deployment
+  namespace: go-mlops
+  labels:
+    app: angular-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: angular-frontend
+  template:
+    metadata:
+      labels:
+        app: angular-frontend
+    spec:
+      containers:
+      - name: angular-frontend
+        # This image will be built using the multi-stage Dockerfile (using Nginx to serve static Angular files)
+        image: vaporist/angular-frontend:v1 
+        ports:
+        - containerPort: 80 # Nginx default port
+        resources:
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+          requests:
+            cpu: "50m"
+            memory: "64Mi"

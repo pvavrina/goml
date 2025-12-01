@@ -1,0 +1,38 @@
+# k8s/angular-frontend/ingress.yaml
+# Angular Frontend Ingress
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: angular-frontend-ingress
+  namespace: go-mlops
+  labels:
+    app: angular-frontend
+  annotations:
+    # Traefik Ingress Controller
+    kubernetes.io/ingress.class: traefik
+    # Use the self-signed issuer for initial TLS management
+    cert-manager.io/issuer: selfsigned-issuer
+    # Tells Traefik to listen on both HTTP (web) and HTTPS (websecure) entrypoints
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    # Apply the HTTP to HTTPS redirection middleware (must exist in go-mlops namespace)
+    traefik.ingress.kubernetes.io/router.middlewares: go-mlops-redirect-to-https@kubernetescrd
+spec:
+  # Explicitly specifies the Traefik Ingress Controller (K8s v1+)
+  ingressClassName: traefik
+  rules:
+  - host: app.tuxjob.ch # Hostname for your Angular application
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: angular-frontend-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - app.tuxjob.ch
+    # Cert-Manager will store the generated certificate in this Secret
+    secretName: angular-tls-selfsigned
