@@ -27,3 +27,8 @@ resources:
 - go-service/deployment-service.yaml
 - go-service/service-go.yaml
 - go-service/ingress-service.yaml
+
+# 🚀 Angular Frontend Resources (NEW)
+- angular-app/deployment.yaml
+- angular-service/connection.yaml
+- angular-network/ingress.yaml

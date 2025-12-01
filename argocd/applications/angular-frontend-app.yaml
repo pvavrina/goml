@@ -1,0 +1,26 @@
+# argocd/applications/angular-frontend-app.yaml
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: angular-frontend
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pvavrina/goml.git
+    targetRevision: main
+    # Pointing to the root K8s folder where the kustomization.yaml is located
+    path: k8s
+    # Using Kustomize to process the k8s folder
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: go-mlops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
