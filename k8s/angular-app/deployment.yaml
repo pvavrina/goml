@@ -17,6 +17,9 @@ spec:
     metadata:
       labels:
         app: angular-frontend
+      annotations:
+        # Force the deployment to restart to pull the new image with Nginx fix
+        kubectl.kubernetes.io/restartedAt: "2025-12-02T23:35:00Z" # Change this date/time value!
     spec:
       containers:
       - name: angular-frontend
