@@ -22,6 +22,7 @@ spec:
       - name: angular-frontend
         # This image will be built using the multi-stage Dockerfile (using Nginx to serve static Angular files)
         image: vaporist/angular-frontend:v1 
+        imagePullPolicy: Always # Set to guarantee the latest Docker image (with pg) is pulled
         ports:
         - containerPort: 80 # Nginx default port
         resources:
