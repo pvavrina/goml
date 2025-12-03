@@ -1,0 +1,16 @@
+# k8s/mlflow-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow
+  namespace: go-mlops
+  labels:
+    app: mlflow
+spec:
+  # Selector links this Service to the MLflow Deployment Pods
+  selector:
+    app: mlflow
+  ports:
+    - protocol: TCP
+      port: 5000 # Internal ClusterIP port (used by other K8s services)
+      targetPort: 5000 # The port where the MLflow container listens

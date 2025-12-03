@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: go-mlops
+  labels:
+    app: mlflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+      - name: mlflow
+        image: mlflow/mlflow:latest
+        ports:
+        - containerPort: 5000
+        args:
+          - mlflow
+          - server
+          - --host
+          - 0.0.0.0
+          - --port
+          - "5000"
+          # Backend Store URI (PostgreSQL)
+          # Uses strapiuser role, its password, the postgres-service K8s service, and the mlflow_db database.
+          - --backend-store-uri
+          - "postgresql://strapiuser:V@vrinAdm1n@postgres-service:5432/mlflow_db" 
+          # Artifact Root (Will use local storage for now, MinIO will be added later)
+          # - --default-artifact-root
+          # - "s3://mlflow-artifacts" 
+        resources:
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
