@@ -32,10 +32,10 @@ spec:
           - --backend-store-uri
           - "postgresql://strapiuser:V%40vrinAdm1n@postgres-service:5432/mlflow_db" 
           # NEW: Disable localhost-only security checks for containerized environment
-          - --allowed-hosts
-          - "*"
-          - --cors-allowed-origins
-          - "*"
+          - --allowed-hosts
+          - "*"
+          - --cors-allowed-origins
+          - "*"
           # Artifact Root (Will use local storage for now, MinIO will be added later)
           # - --default-artifact-root
           # - "s3://mlflow-artifacts" 
