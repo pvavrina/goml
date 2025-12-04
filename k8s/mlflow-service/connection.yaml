@@ -2,7 +2,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow
+  # CORRECTION: Change the name to match the convention used everywhere else
+  name: mlflow-service 
   namespace: go-mlops
   labels:
     app: mlflow
