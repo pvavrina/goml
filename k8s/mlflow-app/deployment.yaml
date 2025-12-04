@@ -20,7 +20,9 @@ spec:
         image: vaporist/mlflow-custom:v1
         ports:
         - containerPort: 5000
+        command: ["/usr/bin/python3"]
         args:
+          - -m
           - mlflow
           - server
           - --host
