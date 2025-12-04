@@ -36,6 +36,7 @@ resources:
 # MLflow Tracking Server Resources
 - mlflow-app/deployment.yaml
 - mlflow-service/connection.yaml
+- mlflow-network/network-policy.yaml
 
 # PostgreSQL Service
 # Enables CoreDNS name resolution for MLflow and GoML application database access.
