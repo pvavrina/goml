@@ -30,7 +30,7 @@ spec:
           # Backend Store URI (PostgreSQL)
           # Uses strapiuser role, its password, the postgres-service K8s service, and the mlflow_db database.
           - --backend-store-uri
-          - "postgresql://strapiuser@postgres-service:5432/mlflow_db" 
+          - "postgresql://strapiuser:V@vrinAdm1n@postgres-service:5432/mlflow_db" 
           # Artifact Root (Will use local storage for now, MinIO will be added later)
           # - --default-artifact-root
           # - "s3://mlflow-artifacts" 
