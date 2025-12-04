@@ -1,0 +1,21 @@
+# k8s/mlflow-network/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow-ingress
+  annotations:
+    # Traefik configuration to enable HTTPS (websecure entrypoint)
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: mlflow.tuxjob.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mlflow-service
+            port:
+              number: 5000
