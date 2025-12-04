@@ -1,0 +1,53 @@
+# k8s/go-app/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service-go-deployment
+spec:
+  # Ensure 1 replica is always running
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-service-go
+  template:
+    metadata:
+      labels:
+        app: ml-service-go
+    spec:
+      containers:
+      - name: ml-service-go-container
+        # Image from your Docker Hub repository
+        image: vaporist/goml:v3
+        ports:
+        - containerPort: 8080
+        # Always pull the image for potential updates or testing
+        imagePullPolicy: Always
+        env:
+        # MLflow Tracking URI (points to the K8s Service)
+        - name: MLFLOW_TRACKING_URI
+          value: "http://mlflow-service:5000"
+
+        # PostgreSQL/Strapi Database Connection
+        - name: DATABASE_HOST
+          value: "postgres-service"
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          value: "strapiuser"
+        - name: DATABASE_NAME
+          value: "mlflow_db"
+        # IMPORTANT: Use the URL-encoded password to handle the '@' character
+        - name: DATABASE_PASSWORD
+          value: "V%40vrinAdm1n"
+        
+        resources:
+          requests:
+            # Request 100 millicores of CPU
+            cpu: "100m"
+            # Request 64 Megabytes of Memory
+            memory: "64Mi"
+          limits:
+            # Hard limit of 200 millicores of CPU
+            cpu: "200m"
+            # Hard limit of 128 Megabytes of Memory
+            memory: "128Mi"

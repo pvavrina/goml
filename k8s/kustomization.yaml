@@ -23,10 +23,17 @@ resources:
 # Strapi Network
 - strapi-network/strapi-ingress.yaml
 
+# OLD
 # Go Service Resources
-- go-service/deployment-service.yaml
-- go-service/service-go.yaml
-- go-service/ingress-service.yaml
+#- go-service/deployment-service.yaml
+#- go-service/service-go.yaml
+#- go-service/ingress-service.yaml
+ 
+# NEW
+# Go Service Resources
+- go-api/deployment.yaml  
+- go-service/connection.yaml
+- go-network/ingress.yaml
 
 # 🚀 Angular Frontend Resources
 - angular-app/deployment.yaml

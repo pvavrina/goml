@@ -1,0 +1,19 @@
+# k8s/go-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-ml-service
+  labels:
+    app: ml-service-go
+spec:
+  # ClusterIP type for internal access within the SUSE/K3s cluster
+  type: ClusterIP
+  selector:
+    # Selector must match the Pod label defined in deployment.yaml
+    app: ml-service-go 
+  ports:
+    # The port exposed by the Service (other Pods call this port)
+  - port: 80 
+    # The port the container is actually listening on (8080 in your Go API)
+    targetPort: 8080
+    protocol: TCP

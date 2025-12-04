@@ -1,0 +1,40 @@
+# k8s/go-network/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: go-ml-service-ingress
+  # Ensure the namespace is correct, assuming 'go-mlops' is where your app resides
+  namespace: go-mlops
+  labels:
+    app: ml-service-go
+  annotations:
+    # Use the Traefik Ingress Controller (Default K3s Class)
+    kubernetes.io/ingress.class: traefik
+    # Use the namespace-scoped Issuer for self-signed certificates
+    cert-manager.io/issuer: selfsigned-issuer
+    # Tells Traefik to listen on both HTTP (web) and HTTPS (websecure) entrypoints
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    # NEW ANNOTATION: Apply the HTTP to HTTPS redirection middleware
+    # Ensure this middleware exists in your cluster or remove it if not needed yet
+    traefik.ingress.kubernetes.io/router.middlewares: go-mlops-redirect-to-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: goml.tuxjob.ch
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            # CORRECTION: Use the actual Service name: go-ml-service
+            name: go-ml-service
+            port:
+              # CORRECTION: Point to the Service's exposed port: 80
+              number: 80
+  # TLS Section for HTTPS management
+  tls:
+  - hosts:
+    - goml.tuxjob.ch
+    # The Secret where Cert-Manager will store the generated certificate
+    secretName: goml-tls-selfsigned
