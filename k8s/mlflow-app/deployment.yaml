@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlflow
+  namespace: go-mlops
   labels:
     app: mlflow
 spec:
@@ -17,45 +18,67 @@ spec:
     spec:
       containers:
       - name: mlflow
-        # Use your actual MLflow Docker image here
-        image: python:3.10-slim 
+        # Corrected image with Gunicorn included
+        image: docker.io/vaporist/mlflow-custom:v2-gunicorn 
         ports:
           - containerPort: 5000
         resources:
           limits:
-            memory: "1Gi" # Confirmed stable memory limit
+            memory: "1Gi"
+            cpu: "500m"
           requests:
             memory: "512Mi"
+            cpu: "200m"
         
-        # Direct execution of Gunicorn to bypass the 'mlflow server' UI bug
+        # Command for direct execution of Gunicorn/Uvicorn
         command:
           - gunicorn
         args:
-          # Gunicorn worker configuration
+          # Gunicorn server configuration
           - --bind
           - 0.0.0.0:5000
           - --worker-class
           - uvicorn.workers.UvicornWorker
           - --threads
           - "8"
-          - mlflow.server:app # The MLflow Python application entry point
-        
+          - mlflow.server:app 
+          
+          # MLflow arguments using the secured environment variable
+          - --backend-store-uri
+          - "$(MLFLOW_TRACKING_URI)" 
+          - --default-artifact-root
+          - "file:///mlflow-artifacts"
+          - --serve-artifacts
+          
         env:
-          # Database connection
+          # --- SECRET CONFIGURATION ---
+          # 1. Base components for secure URI construction
+          - name: MLFLOW_DB_USERNAME
+            value: mlflow_user 
+          - name: MLFLOW_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: strapi-db-secret      # Secret name
+                key: POSTGRES_PASSWORD       # Secret key
+          - name: MLFLOW_DB_HOST
+            value: postgres-clusterip-service:5432 # K8s Service name and port
+
+          # 2. Build the full secure URI
           - name: MLFLOW_TRACKING_URI
-            value: "postgresql://mlflow_user:password@postgres-clusterip-service:5432/mlflow_db"
-          # Artifact Root (Essential for persisting models and UI assets)
-          - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
-            value: /mlflow-artifacts
-          # Allows Gunicorn to handle requests correctly when running behind a proxy (Traefik)
+            value: "postgresql://$(MLFLOW_DB_USERNAME):$(MLFLOW_DB_PASSWORD)@$(MLFLOW_DB_HOST)/mlflow_db"
+            
+          # --- OTHER ENV VARIABLES ---
           - name: GUNICORN_CMD_ARGS
             value: "--forwarded-allow-ips=*"
-          # Additional environment variables for MLflow API
           - name: MLFLOW_SERVER_HOST
             value: 0.0.0.0
           - name: MLFLOW_SERVER_PORT
             value: "5000"
-        
+
+          # NEW: FORCE STATIC PREFIX FOR UI ASSETS
+          - name: MLFLOW_STATIC_PREFIX
+            value: "" # Use an empty string to force the root path
+            
         # Mount the volume for artifact storage
         volumeMounts:
           - name: mlflow-artifact-storage
