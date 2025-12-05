@@ -7,6 +7,8 @@ metadata:
     # Traefik configuration to enable HTTPS (websecure entrypoint)
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
+    # Increase the backend timeout to 30s to prevent 502 Bad Gateway if MLflow starts slowly
+    traefik.ingress.kubernetes.io/forwarding-timeout: "30s"
 spec:
   rules:
   - host: mlflow.tuxjob.ch
