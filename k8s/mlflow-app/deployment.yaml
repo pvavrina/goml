@@ -42,6 +42,8 @@ spec:
           - --threads
           - "8"
           - mlflow.server:app 
+
+          - "--"
           
           # MLflow arguments using the secured environment variable
           - --backend-store-uri

@@ -1,0 +1,15 @@
+# k8s/mlflow-app/mlflow-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-pvc
+  # Ensure this PVC is created in the same namespace as the MLflow Deployment
+  namespace: go-mlops 
+spec:
+  # Define access mode: ReadWriteOnce means it can be mounted by one node at a time
+  accessModes:
+    - ReadWriteOnce
+  # Define storage capacity needed for the artifacts
+  resources:
+    requests:
+      storage: 5Gi # Set a reasonable size for artifacts
