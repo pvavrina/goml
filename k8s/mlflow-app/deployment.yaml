@@ -1,8 +1,8 @@
+# k8s/mlflow-app/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlflow
-  namespace: go-mlops
   labels:
     app: mlflow
 spec:
@@ -17,35 +17,52 @@ spec:
     spec:
       containers:
       - name: mlflow
-        image: vaporist/mlflow-custom:v1
+        # Use your actual MLflow Docker image here
+        image: python:3.10-slim 
         ports:
-        - containerPort: 5000
-        args:
-          - mlflow
-          - server
-          - --host
-          - 0.0.0.0
-          - --port
-          - "5000"
-          # Backend Store URI (PostgreSQL)
-          # Uses strapiuser role, its password, the postgres-service K8s service, and the mlflow_db database.
-          - --backend-store-uri
-          - "postgresql://strapiuser:V%40vrinAdm1n@postgres-service:5432/mlflow_db" 
-          # NEW: Disable localhost-only security checks for containerized environment
-          - --allowed-hosts
-          - "*"
-          - --cors-allowed-origins
-          - "*"
-          - --serve-artifacts # NEW: Explicitly serve artifacts and UI assets
-          - --static-prefix   # NEW: Explicitly set static 
-          - "/"               # NEW: Use empty string to indicate the root path (/)
-          # Artifact Root (Will use local storage for now, MinIO will be added later)
-          # - --default-artifact-root
-          # - "s3://mlflow-artifacts" 
+          - containerPort: 5000
         resources:
           limits:
-            cpu: "300m"
-            memory: "1Gi"
+            memory: "1Gi" # Confirmed stable memory limit
           requests:
-            cpu: "200m"
-            memory: "256Mi"
+            memory: "512Mi"
+        
+        # Direct execution of Gunicorn to bypass the 'mlflow server' UI bug
+        command:
+          - gunicorn
+        args:
+          # Gunicorn worker configuration
+          - --bind
+          - 0.0.0.0:5000
+          - --worker-class
+          - uvicorn.workers.UvicornWorker
+          - --threads
+          - "8"
+          - mlflow.server:app # The MLflow Python application entry point
+        
+        env:
+          # Database connection
+          - name: MLFLOW_TRACKING_URI
+            value: "postgresql://mlflow_user:password@postgres-clusterip-service:5432/mlflow_db"
+          # Artifact Root (Essential for persisting models and UI assets)
+          - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
+            value: /mlflow-artifacts
+          # Allows Gunicorn to handle requests correctly when running behind a proxy (Traefik)
+          - name: GUNICORN_CMD_ARGS
+            value: "--forwarded-allow-ips=*"
+          # Additional environment variables for MLflow API
+          - name: MLFLOW_SERVER_HOST
+            value: 0.0.0.0
+          - name: MLFLOW_SERVER_PORT
+            value: "5000"
+        
+        # Mount the volume for artifact storage
+        volumeMounts:
+          - name: mlflow-artifact-storage
+            mountPath: /mlflow-artifacts
+      
+      # Define the volume based on the PersistentVolumeClaim (PVC)
+      volumes:
+        - name: mlflow-artifact-storage
+          persistentVolumeClaim:
+            claimName: mlflow-pvc
