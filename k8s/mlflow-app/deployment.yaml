@@ -37,6 +37,8 @@ spec:
           - --cors-allowed-origins
           - "*"
           - --serve-artifacts # NEW: Explicitly serve artifacts and UI assets
+          - --static-prefix  # NEW: Explicitly set static 
+          - ""               # NEW: Use empty string to indicate the root path (/)
           # Artifact Root (Will use local storage for now, MinIO will be added later)
           # - --default-artifact-root
           # - "s3://mlflow-artifacts" 
