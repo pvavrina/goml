@@ -17,6 +17,7 @@ metadata:
     # We use the Service ClusterIP name on its non-TLS port 5000
     #traefik.ingress.kubernetes.io/server-url: "http://mlflow-service:5000"
     traefik.ingress.kubernetes.io/service.serversscheme: http
+    traefik.ingress.kubernetes.io/loadbalancer.server.healthcheck.timeout: 60s
 spec:
   rules:
   - host: mlflow.tuxjob.ch
