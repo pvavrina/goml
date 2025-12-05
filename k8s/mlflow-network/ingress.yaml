@@ -10,7 +10,7 @@ metadata:
     # Increase the backend timeout to 30s to prevent 502 Bad Gateway if MLflow starts slowly
     traefik.ingress.kubernetes.io/forwarding-timeout: "30s"
     # New: Pass Host header directly to the backend service
-    traefik.ingress.kubernetes.io/passhostheader: "true"
+    traefik.ingress.kubernetes.io/passhostheader: "false"
     # New: Disable proxy buffering
     traefik.ingress.kubernetes.io/buffering: "false"
     # NEW: Forces Traefik to use a specific non-TLS URL for the backend communication.
