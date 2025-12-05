@@ -13,6 +13,9 @@ metadata:
     traefik.ingress.kubernetes.io/passhostheader: "true"
     # New: Disable proxy buffering
     traefik.ingress.kubernetes.io/buffering: "false"
+    # NEW: Forces Traefik to use a specific non-TLS URL for the backend communication.
+    # We use the Service ClusterIP name on its non-TLS port 5000
+    traefik.ingress.kubernetes.io/server-url: "http://mlflow-service:5000"
 spec:
   rules:
   - host: mlflow.tuxjob.ch
