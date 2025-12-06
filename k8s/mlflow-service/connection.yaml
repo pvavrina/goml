@@ -12,7 +12,7 @@ metadata:
     traefik.ingress.kubernetes.io/loadbalancer.server.prefer-ip: "true"
 spec:
   # CHANGE THE TYPE HERE: We are switching from NodePort to ClusterIP again
-  type: NodePort
+  type: ClusterIP
   # Selector links this Service to the MLflow Deployment Pods
   selector:
     app: mlflow
