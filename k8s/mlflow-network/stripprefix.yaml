@@ -1,0 +1,11 @@
+# k8s/mlflow-network/stripprefix.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-mlflow-prefix
+  namespace: go-mlops
+spec:
+  stripPrefix:
+    prefixes:
+      - /mlflow
+    forceSlash: true

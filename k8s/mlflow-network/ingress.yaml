@@ -13,6 +13,10 @@ metadata:
     traefik.ingress.kubernetes.io/service.serversscheme: http
     # 💡 ADDED: Traefik annotation to enable TLS and route traffic through websecure entrypoint
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    # 💡 ADDED: Use the StripPrefix Middleware
+    traefik.ingress.kubernetes.io/router.middlewares: go-mlops-strip-mlflow-prefix@kubernetescrd
+    # 💡 ADDED: Set the URL scheme (often required for MLflow)
+    traefik.ingress.kubernetes.io/service.serverstransport: "mlflow-service@kubernetescrd"
 spec:
   ingressClassName: traefik
   # 💡 ADDED: TLS Configuration
@@ -30,5 +34,5 @@ spec:
             name: mlflow-service
             port:
               number: 5000
-        path: /
+        path: /mlflow
         pathType: Prefix
