@@ -45,9 +45,9 @@ spec:
 
           - "--"
 
-          - --static-prefix
-          - ""
-          
+          - --root-uri
+          - / 
+
           # MLflow arguments using the secured environment variable
           - --backend-store-uri
           - "$(MLFLOW_TRACKING_URI)" 
