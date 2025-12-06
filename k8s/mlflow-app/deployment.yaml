@@ -38,7 +38,7 @@ spec:
           - --bind
           - 0.0.0.0:5000
           - --worker-class
-          - gunicorn.workers.sync
+          - sync
           - --threads
           - "8"
           - mlflow.server:app 
