@@ -38,7 +38,7 @@ spec:
           - --bind
           - 0.0.0.0:5000
           - --worker-class
-          - uvicorn.workers.UvicornWorker
+          - gunicorn.workers.sync
           - --threads
           - "8"
           - mlflow.server:app 
