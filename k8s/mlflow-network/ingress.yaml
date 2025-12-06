@@ -4,21 +4,17 @@ kind: Ingress
 metadata:
   name: mlflow-ingress
   annotations:
-    # Traefik configuration to enable HTTPS (websecure entrypoint)
-    #traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    #traefik.ingress.kubernetes.io/router.tls: "true"
-    # Increase the backend timeout to 30s to prevent 502 Bad Gateway if MLflow starts slowly
-    #traefik.ingress.kubernetes.io/forwarding-timeout: "120s"
-    # New: Pass Host header directly to the backend service
-    traefik.ingress.kubernetes.io/passhostheader: "false"
-    # New: Disable proxy buffering
-    traefik.ingress.kubernetes.io/buffering: "false"
-    # NEW: Forces Traefik to use a specific non-TLS URL for the backend communication.
-    # We use the Service ClusterIP name on its non-TLS port 5000
-    #traefik.ingress.kubernetes.io/server-url: "http://mlflow-service:5000"
+    # Essential for non-TLS backend communication
     traefik.ingress.kubernetes.io/service.serversscheme: http
-    #traefik.ingress.kubernetes.io/loadbalancer.server.healthcheck.timeout: 120s
-    traefik.ingress.kubernetes.io/loadbalancer.healthcheck.status: "disable"
+
+    # New annotation to force Traefik to reload its configuration for the Service
+    traefik.ingress.kubernetes.io/service-lb-algorithm: "wrr" 
+
+    # We comment out complex settings to ensure clean routing
+    # traefik.ingress.kubernetes.io/passhostheader: "false"
+    # traefik.ingress.kubernetes.io/buffering: "false"
+    # traefik.ingress.kubernetes.io/loadbalancer.healthcheck.status: "disable"
+
 spec:
   rules:
   - host: mlflow.tuxjob.ch
