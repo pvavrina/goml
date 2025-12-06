@@ -1,29 +1,34 @@
-# k8s/mlflow-network/ingress.yaml
+# Ingress manifest for MLflow tracking server
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: mlflow-ingress
+  namespace: go-mlops
   annotations:
-    # Essential for non-TLS backend communication
+    # ArgoCD tracking ID
+    argocd.argoproj.io/tracking-id: go-ml-service:networking.k8s.io/Ingress:go-mlops/mlflow-ingress
+    # Traefik load-balancing algorithm (Weighted Round Robin)
+    traefik.ingress.kubernetes.io/service-lb-algorithm: wrr
+    # Ensure Traefik connects to the backend service (MLflow) using HTTP
     traefik.ingress.kubernetes.io/service.serversscheme: http
-
-    # New annotation to force Traefik to reload its configuration for the Service
-    traefik.ingress.kubernetes.io/service-lb-algorithm: "wrr" 
-
-    # We comment out complex settings to ensure clean routing
-    # traefik.ingress.kubernetes.io/passhostheader: "false"
-    # traefik.ingress.kubernetes.io/buffering: "false"
-    # traefik.ingress.kubernetes.io/loadbalancer.healthcheck.status: "disable"
-
+    # 💡 ADDED: Traefik annotation to enable TLS and route traffic through websecure entrypoint
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
+  ingressClassName: traefik
+  # 💡 ADDED: TLS Configuration
+  tls:
+  - hosts:
+    - mlflow.tuxjob.ch
+    # Reference the Secret containing the TLS certificate (e.g., self-signed or Cert-manager generated)
+    secretName: mlflow-tls-secret # Use your specific TLS secret name here
   rules:
   - host: mlflow.tuxjob.ch
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
+      - backend:
           service:
             name: mlflow-service
             port:
               number: 5000
+        path: /
+        pathType: Prefix
