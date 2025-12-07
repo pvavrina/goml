@@ -9,13 +9,16 @@ metadata:
 spec:
   project: default
   source:
-    # Repository URL for the community charts
-    repoURL: https://community-charts.github.io/helm-charts
+    # Set the repository source to the Git repository (where k8s/ is located)
+    repoURL: https://github.com/pvavrina/goml.git
     # Chart name
     chart: mlflow
     # Target version of the community chart
     targetRevision: 1.8.1
     helm:
+      # Explicitly define the external chart repository URL where the chart is located
+      repository:
+        url: https://community-charts.github.io/helm-charts
       # Reference the custom values file
       valueFiles:
         - k8s/helm/mlflow/values-mlflow.yaml
