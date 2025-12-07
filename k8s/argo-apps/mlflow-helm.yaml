@@ -1,4 +1,6 @@
-# ArgoCD Application Definition for the MLflow Helm Chart
+# ArgoCD Application Definition for MLflow
+# This configuration points the source directly to the external Helm chart repository,
+# and relies on the simple relative path to find the custom values file in the Git repo.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -9,23 +11,23 @@ metadata:
 spec:
   project: default
   source:
-    # Set the repository source to the Git repository (where k8s/ is located)
-    repoURL: https://github.com/pvavrina/goml.git
-    # Chart name
+    # Set the repository source to the external community Helm repository (fixes 404 error)
+    repoURL: https://community-charts.github.io/helm-charts
+    
+    # Chart name available in the repository
     chart: mlflow
-    # Target version of the community chart
     targetRevision: 1.8.1
+    
     helm:
-      # Explicitly define the external chart repository URL where the chart is located
-      repository:
-        url: https://community-charts.github.io/helm-charts
-      # Reference the custom values file
+      # Simple relative path from the Git root to the custom values file
       valueFiles:
         - k8s/helm/mlflow/values-mlflow.yaml
+        
   destination:
     server: https://kubernetes.default.svc
     # Deploy to the go-mlops namespace
     namespace: go-mlops
+    
   syncPolicy:
     automated:
       prune: true
