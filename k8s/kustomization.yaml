@@ -44,3 +44,6 @@ resources:
 # PostgreSQL Service
 # Enables CoreDNS name resolution for MLflow and GoML application database access.
 - postgres/service.yaml
+
+# ArgoCD Application for the MLflow Helm Chart Deployment
+- argo-apps/mlflow-helm.yaml
