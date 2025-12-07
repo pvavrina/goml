@@ -1,6 +1,6 @@
 # ArgoCD Application Definition for MLflow
 # This configuration points the source directly to the external Helm chart repository,
-# and relies on the simple relative path to find the custom values file in the Git repo.
+# and uses inline 'values' to avoid file resolution errors.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -11,7 +11,7 @@ metadata:
 spec:
   project: default
   source:
-    # Set the repository source to the external community Helm repository (fixes 404 error)
+    # Set the repository source to the external community Helm repository
     repoURL: https://community-charts.github.io/helm-charts
     
     # Chart name available in the repository
@@ -19,9 +19,57 @@ spec:
     targetRevision: 1.8.1
     
     helm:
-      # Simple relative path from the Git root to the custom values file
-      valueFiles:
-        - k8s/helm/mlflow/values-mlflow.yaml
+      # 💡 CHANGED: The 'values' field contains the YAML content directly (inline)
+      values: |
+        # Custom values for the MLflow Community Helm Chart
+        # 1. External Database Configuration
+        externalDatabase:
+          host: postgres-service
+          port: 5432
+          database: mlflow_db
+          user: strapiuser
+          password: V%40vrinAdm1n
+
+        # 2. MLflow Server Service Configuration
+        service:
+          type: ClusterIP
+
+        # 3. Persistence Configuration (for artifact storage)
+        persistence:
+          enabled: true
+          accessMode: ReadWriteOnce
+          size: 5Gi
+
+        # 4. Ingress Configuration
+        ingress:
+          enabled: true
+          hosts:
+            - host: mlflow.tuxjob.ch
+              paths:
+                - path: /mlflow
+                  pathType: Prefix
+          tls:
+            - secretName: mlflow-tls-secret
+              hosts:
+                - mlflow.tuxjob.ch
+          annotations:
+            # Use Traefik as the Ingress Class
+            kubernetes.io/ingress.class: traefik
+            # Annotation to force HTTPS via Traefik's websecure entrypoint
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+
+        # 5. Base Path Correction (Crucial for fixing Bad Gateway/404 when proxying)
+        mlflow:
+          basePath: /mlflow
+
+        # 6. Resource Limits Configuration
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
         
   destination:
     server: https://kubernetes.default.svc
