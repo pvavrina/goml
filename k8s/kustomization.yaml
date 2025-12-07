@@ -46,4 +46,4 @@ resources:
 - postgres/service.yaml
 
 # ArgoCD Application for the MLflow Helm Chart Deployment
-- argo-apps/mlflow-helm.yaml
+# - argo-apps/mlflow-helm.yaml
