@@ -1,0 +1,52 @@
+# Custom values for the MLflow Community Helm Chart
+# This configuration connects MLflow to the existing external PostgreSQL database
+# and configures the Traefik Ingress with the correct base path.
+
+# 1. External Database Configuration
+externalDatabase:
+  host: postgres-service
+  port: 5432
+  database: mlflow_db
+  user: strapiuser
+  password: V%40vrinAdm1n
+
+# 2. MLflow Server Service Configuration
+service:
+  type: ClusterIP
+
+# 3. Persistence Configuration (for artifact storage)
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 5Gi
+
+# 4. Ingress Configuration
+ingress:
+  enabled: true
+  hosts:
+    - host: mlflow.tuxjob.ch
+      paths:
+        - path: /mlflow
+          pathType: Prefix
+  tls:
+    - secretName: mlflow-tls-secret
+      hosts:
+        - mlflow.tuxjob.ch
+  annotations:
+    # Use Traefik as the Ingress Class
+    kubernetes.io/ingress.class: traefik
+    # Annotation to force HTTPS via Traefik's websecure entrypoint
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+
+# 5. Base Path Correction (Crucial for fixing Bad Gateway/404 when proxying)
+mlflow:
+  basePath: /mlflow
+
+# 6. Resource Limits Configuration
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi

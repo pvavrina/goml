@@ -1,0 +1,31 @@
+# ArgoCD Application Definition for the MLflow Helm Chart
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mlflow-helm-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # Repository URL for the community charts
+    repoURL: https://community-charts.github.io/helm-charts
+    # Chart name
+    chart: mlflow
+    # Target version of the community chart
+    targetRevision: 1.8.1
+    helm:
+      # Reference the custom values file
+      valueFiles:
+        - $GIT_ROOT/k8s/helm/mlflow/values-mlflow.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    # Deploy to the go-mlops namespace
+    namespace: go-mlops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
