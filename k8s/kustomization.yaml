@@ -34,12 +34,12 @@ resources:
 - angular-network/ingress.yaml
 
 # MLflow Tracking Server Resources
-- mlflow-storage/pvc.yaml
-- mlflow-app/deployment.yaml
-- mlflow-service/connection.yaml
-- mlflow-network/network-policy.yaml
-- mlflow-network/stripprefix.yaml
-- mlflow-network/ingress.yaml
+#- mlflow-storage/pvc.yaml
+#- mlflow-app/deployment.yaml
+#- mlflow-service/connection.yaml
+#- mlflow-network/network-policy.yaml
+#- mlflow-network/stripprefix.yaml
+#- mlflow-network/ingress.yaml
 
 # PostgreSQL Service
 # Enables CoreDNS name resolution for MLflow and GoML application database access.
