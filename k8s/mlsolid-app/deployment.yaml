@@ -41,3 +41,7 @@ spec:
         # FIX: Disable Redis dependency which caused CrashLoopBackOff
         - name: REDIS_ENABLED
           value: "false"
+
+        # NEW: Force Redis host to a non-DNS crashing value (e.g. localhost)
+        - name: REDIS_HOST
+          value: "127.0.0.1:6379"
