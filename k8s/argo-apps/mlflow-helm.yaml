@@ -1,6 +1,6 @@
 # ArgoCD Application Definition for MLflow
 # This configuration points the source directly to the external Helm chart repository,
-# and uses inline 'values' to avoid file resolution errors.
+# and uses INLINE 'values' to avoid file resolution errors.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -19,28 +19,37 @@ spec:
     targetRevision: 1.8.1
     
     helm:
-      # 💡 CHANGED: The 'values' field contains the YAML content directly (inline)
+      # The 'values' field contains the YAML content directly (inline)
       values: |
-        # Custom values for the MLflow Community Helm Chart
-        # 1. External Database Configuration
-        externalDatabase:
-          host: postgres-service
-          port: 5432
-          database: mlflow_db
-          user: strapiuser
-          password: V%40vrinAdm1n
+        # 1. Disable the PostgreSQL sub-Chart to force the use of externalDatabase
+        postgresql:
+          enabled: false
 
-        # 2. MLflow Server Service Configuration
+        # 2. MLflow specific settings (basePath, external database, and persistence)
+        # Note: These values must be placed under the 'mlflow' key for schema compatibility.
+        mlflow:
+          # External Database Configuration
+          externalDatabase:
+            host: postgres-service
+            port: 5432
+            database: mlflow_db
+            user: strapiuser
+            password: V%40vrinAdm1n
+            
+          # Base Path Correction (Crucial for fixing Bad Gateway/404 when proxying)
+          basePath: /mlflow
+
+          # Persistence Configuration for artifact storage (moved under mlflow key)
+          persistence:
+            enabled: true
+            accessMode: ReadWriteOnce
+            size: 5Gi
+
+        # 3. Service Configuration (remains at root, as it configures the top-level service)
         service:
           type: ClusterIP
 
-        # 3. Persistence Configuration (for artifact storage)
-        persistence:
-          enabled: true
-          accessMode: ReadWriteOnce
-          size: 5Gi
-
-        # 4. Ingress Configuration
+        # 4. Ingress Configuration (remains at root, as it configures the top-level Ingress)
         ingress:
           enabled: true
           hosts:
@@ -58,11 +67,7 @@ spec:
             # Annotation to force HTTPS via Traefik's websecure entrypoint
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
-        # 5. Base Path Correction (Crucial for fixing Bad Gateway/404 when proxying)
-        mlflow:
-          basePath: /mlflow
-
-        # 6. Resource Limits Configuration
+        # 5. Resource Limits Configuration (remains at root)
         resources:
           limits:
             cpu: 200m
