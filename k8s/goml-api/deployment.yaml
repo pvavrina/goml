@@ -36,6 +36,11 @@ spec:
         # IMPORTANT: Use the URL-encoded password to handle the '@' character
         - name: DATABASE_PASSWORD
           value: "V%40vrinAdm1n"
+
+        # NEW: Set the timezone to match the CET/CEST timezone
+        - name: TZ
+          value: "Europe/Zurich"  
+
         
         resources:
           requests:
@@ -62,3 +67,5 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 15
+
+        
