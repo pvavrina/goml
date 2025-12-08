@@ -21,32 +21,34 @@ spec:
     helm:
       # The 'values' field contains the YAML content directly (inline)
       values: |
-        # 1. Disable the PostgreSQL sub-Chart to force the use of externalDatabase
+        # 1. Disable the PostgreSQL sub-Chart, as externalDatabase is used
         postgresql:
           enabled: false
 
-        # 2. External Database Configuration (MOVED TO ROOT)
-        externalDatabase:
-          host: postgres-service
-          port: 5432
-          database: mlflow_db
-          user: strapiuser
-          password: V%40vrinAdm1n
+        # 2. MLflow specific settings (nested under 'mlflow' key)
+        mlflow:
+          # External Database Configuration
+          externalDatabase:
+            host: postgres-service
+            port: 5432
+            database: mlflow_db
+            user: strapiuser
+            password: V%40vrinAdm1n
             
-        # 3. Base Path Correction (MOVED TO ROOT)
-        basePath: /mlflow
+          # Base Path Correction
+          basePath: /mlflow
 
-        # 4. Persistence Configuration for artifact storage (MOVED TO ROOT)
-        persistence:
-          enabled: true
-          accessMode: ReadWriteOnce
-          size: 5Gi
+          # Persistence Configuration for artifact storage
+          persistence:
+            enabled: true
+            accessMode: ReadWriteOnce
+            size: 5Gi
 
-        # 5. MLflow Server Service Configuration
+        # 3. MLflow Server Service Configuration (remains at root)
         service:
           type: ClusterIP
 
-        # 6. Ingress Configuration
+        # 4. Ingress Configuration (remains at root)
         ingress:
           enabled: true
           hosts:
@@ -64,7 +66,7 @@ spec:
             # Annotation to force HTTPS via Traefik's websecure entrypoint
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
-        # 7. Resource Limits Configuration
+        # 5. Resource Limits Configuration (remains at root)
         resources:
           limits:
             cpu: 200m
