@@ -16,7 +16,7 @@ spec:
     
     # Chart name available in the repository
     chart: mlflow
-    targetRevision: 1.8.0
+    targetRevision: 1.8.1
     
     helm:
       # The 'values' field contains the YAML content directly (inline)
@@ -25,30 +25,25 @@ spec:
         postgresql:
           enabled: false
 
-        # 2. MLflow specific settings (nested under 'mlflow' key)
-        mlflow:
-          # External Database Configuration
-          externalDatabase:
-            host: postgres-service
-            port: 5432
-            database: mlflow_db
-            user: strapiuser
-            password: V%40vrinAdm1n
+        # 2. External Database URL (using the full connection string at the root level)
+        # We must use the 'externalDatabase.url' key directly at the root level, 
+        # as simple key nesting (e.g., 'mlflow:') and complex key nesting ('externalDatabase:') failed validation.
+        externalDatabase.url: postgresql://strapiuser:V%40vrinAdm1n@postgres-service:5432/mlflow_db
             
-          # Base Path Correction
-          basePath: /mlflow
+        # 3. Base Path Correction (at the root)
+        basePath: /mlflow
 
-          # Persistence Configuration for artifact storage
-          persistence:
-            enabled: true
-            accessMode: ReadWriteOnce
-            size: 5Gi
+        # 4. Persistence Configuration for artifact storage (at the root)
+        persistence:
+          enabled: true
+          accessMode: ReadWriteOnce
+          size: 5Gi
 
-        # 3. MLflow Server Service Configuration (remains at root)
+        # 5. MLflow Server Service Configuration (remains at root)
         service:
           type: ClusterIP
 
-        # 4. Ingress Configuration (remains at root)
+        # 6. Ingress Configuration (remains at root)
         ingress:
           enabled: true
           hosts:
@@ -66,7 +61,7 @@ spec:
             # Annotation to force HTTPS via Traefik's websecure entrypoint
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
-        # 5. Resource Limits Configuration (remains at root)
+        # 7. Resource Limits Configuration (remains at root)
         resources:
           limits:
             cpu: 200m
