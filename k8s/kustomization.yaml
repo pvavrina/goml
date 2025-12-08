@@ -33,6 +33,10 @@ resources:
 - angular-service/connection.yaml
 - angular-network/ingress.yaml
 
+# MLSolid Tracking Service Resources
+- mlsolid-app/deployment.yaml
+- mlsolid-service/connection.yaml
+
 # PostgreSQL Service
-# Enables CoreDNS name resolution for MLflow and GoML application database access.
+# Enables CoreDNS name resolution for database access.
 - postgres/service.yaml

@@ -1,0 +1,40 @@
+# k8s/mlsolid-app/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlsolid-deployment
+spec:
+  # Deployment for the MLSolid Tracking Service (Go)
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlsolid-service
+  template:
+    metadata:
+      labels:
+        app: mlsolid-service
+    spec:
+      containers:
+      - name: mlsolid-container
+        # Replace with your MLSolid image if you build one, or use a known stable image
+        # Example: Using the image from the Dockerfile provided in the MLSolid repository
+        image: zeddo123/mlsolid:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Always
+        
+        # Environment variables for PostgreSQL connection
+        env:
+        - name: DATABASE_TYPE
+          value: "postgres"
+        - name: DATABASE_HOST
+          value: "postgres-service" # Internal K8s service name
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          value: "strapiuser" # Assuming the same user has access to create tables
+        - name: DATABASE_NAME
+          value: "mlsolid_db" # A new database for MLSolid
+        # IMPORTANT: Use the URL-encoded password
+        - name: DATABASE_PASSWORD
+          value: "V%40vrinAdm1n"
