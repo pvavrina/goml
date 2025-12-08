@@ -18,7 +18,7 @@ spec:
       - name: mlsolid-container
         # Replace with your MLSolid image if you build one, or use a known stable image
         # Example: Using the image from the Dockerfile provided in the MLSolid repository
-        image: zeddo123/mlsolid:latest
+        image: vaporist/mlsolid:v1
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
