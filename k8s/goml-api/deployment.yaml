@@ -23,7 +23,8 @@ spec:
         # Always pull the image for potential updates or testing
         imagePullPolicy: Always
         env:
-
+        - name: MLSOLID_SERVICE_ADDR
+          value: "mlsolid-service:5000"
         # PostgreSQL/Strapi Database Connection
         - name: DATABASE_HOST
           value: "postgres-service"
