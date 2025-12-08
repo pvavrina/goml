@@ -16,7 +16,7 @@ spec:
     
     # Chart name available in the repository
     chart: mlflow
-    targetRevision: 1.8.1
+    targetRevision: 1.8.0
     
     helm:
       # The 'values' field contains the YAML content directly (inline)
