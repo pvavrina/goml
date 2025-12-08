@@ -25,31 +25,28 @@ spec:
         postgresql:
           enabled: false
 
-        # 2. MLflow specific settings (basePath, external database, and persistence)
-        # Note: These values must be placed under the 'mlflow' key for schema compatibility.
-        mlflow:
-          # External Database Configuration
-          externalDatabase:
-            host: postgres-service
-            port: 5432
-            database: mlflow_db
-            user: strapiuser
-            password: V%40vrinAdm1n
+        # 2. External Database Configuration (MOVED TO ROOT)
+        externalDatabase:
+          host: postgres-service
+          port: 5432
+          database: mlflow_db
+          user: strapiuser
+          password: V%40vrinAdm1n
             
-          # Base Path Correction (Crucial for fixing Bad Gateway/404 when proxying)
-          basePath: /mlflow
+        # 3. Base Path Correction (MOVED TO ROOT)
+        basePath: /mlflow
 
-          # Persistence Configuration for artifact storage (moved under mlflow key)
-          persistence:
-            enabled: true
-            accessMode: ReadWriteOnce
-            size: 5Gi
+        # 4. Persistence Configuration for artifact storage (MOVED TO ROOT)
+        persistence:
+          enabled: true
+          accessMode: ReadWriteOnce
+          size: 5Gi
 
-        # 3. Service Configuration (remains at root, as it configures the top-level service)
+        # 5. MLflow Server Service Configuration
         service:
           type: ClusterIP
 
-        # 4. Ingress Configuration (remains at root, as it configures the top-level Ingress)
+        # 6. Ingress Configuration
         ingress:
           enabled: true
           hosts:
@@ -67,7 +64,7 @@ spec:
             # Annotation to force HTTPS via Traefik's websecure entrypoint
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
-        # 5. Resource Limits Configuration (remains at root)
+        # 7. Resource Limits Configuration
         resources:
           limits:
             cpu: 200m
