@@ -23,9 +23,6 @@ spec:
         # Always pull the image for potential updates or testing
         imagePullPolicy: Always
         env:
-        # MLflow Tracking URI (points to the K8s Service)
-        - name: MLFLOW_TRACKING_URI
-          value: "http://mlflow-service:5000"
 
         # PostgreSQL/Strapi Database Connection
         - name: DATABASE_HOST
