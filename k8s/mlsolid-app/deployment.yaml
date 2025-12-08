@@ -42,6 +42,12 @@ spec:
         - name: REDIS_ENABLED
           value: "false"
 
-        # NEW: Force Redis host to a non-DNS crashing value (e.g. localhost)
+        # Keep this to avoid DNS resolution failure
+        # Force Redis host to a non-DNS crashing value (e.g. localhost)
         - name: REDIS_HOST
+          value: "127.0.0.1:6379"
+
+        # NEW ATTEMPT: Try overriding the connection address read by the app
+        # Use a non-resolvable host to prevent DNS panic
+        - name: REDIS_ADDR
           value: "127.0.0.1:6379"
