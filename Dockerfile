@@ -1,29 +1,40 @@
-# Build stage: Compile the Go application
+# ----------------------------------------------------------------------
+# Stage 1: Builder
+# ----------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
-# Disable CGO (for static compilation) and target Linux
-ENV CGO_ENABLED=0 GOOS=linux
-
+# Set the working directory
 WORKDIR /app
 
-# Copy go.mod and go.sum (good practice for caching layers)
-COPY go.mod ./
+# Copy go.mod and go.sum (if it exists) to resolve dependencies first
+COPY go.mod go.sum ./
+
+# Download dependencies (this caches external dependencies)
 RUN go mod download
 
-# Copy the source code
+# 🟢 CRITICAL CHANGE: Copy all source files, including main.go AND the generated stubs (github.com directory)
+# We copy all relevant files (main.go and the copied github.com directory with stubs)
 COPY main.go .
+COPY api api
+# Note: If your Dockerfile used COPY . ., the next step (RUN go mod tidy) would already handle the new imports.
+
+# 🟢 NEW STEP: Run go mod tidy to update go.mod/go.sum and resolve the NEW gRPC imports
+# This is necessary because the previous 'go mod download' didn't see the new imports in main.go
+RUN go mod tidy
 
 # Build the static executable
 RUN go build -o ml-service-go main.go
 
-# Final stage: Create a minimal production image
+# ----------------------------------------------------------------------
+# Stage 2: Final minimal image
+# ----------------------------------------------------------------------
 FROM alpine:latest
 
-# Copy the executable from the build stage
-COPY --from=builder /app/ml-service-go /usr/local/bin/
+# Set the working directory
+WORKDIR /app
 
-# Expose the port defined in the Go code (8080)
-EXPOSE 8080
+# Copy the built executable from the builder stage
+COPY --from=builder /app/ml-service-go .
 
-# Command to run the executable
-ENTRYPOINT ["/usr/local/bin/ml-service-go"]
+# Set default command for the container
+CMD ["./ml-service-go"]

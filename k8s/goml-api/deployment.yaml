@@ -17,7 +17,7 @@ spec:
       containers:
       - name: ml-service-go-container
         # Image from your Docker Hub repository
-        image: vaporist/goml:v3
+        image: vaporist/goml:v4
         ports:
         - containerPort: 8080
         # Always pull the image for potential updates or testing

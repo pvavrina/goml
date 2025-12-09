@@ -1,1 +1,4 @@
 k8s/angular-app/deployment.yaml.bak
+/main.go.ori
+/Dockerfile.bak
+/main.go.bak
