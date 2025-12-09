@@ -17,7 +17,7 @@ spec:
       containers:
       - name: mlsolid-container
         # FIX: Use custom built image instead of inaccessible zeddo123/mlsolid:latest
-        image: vaporist/mlsolid:v1 
+        image: vaporist/mlsolid:v1.2 
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
