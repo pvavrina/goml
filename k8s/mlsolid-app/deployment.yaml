@@ -37,21 +37,7 @@ spec:
         # IMPORTANT: Use the URL-encoded password
         - name: DATABASE_PASSWORD
           value: "V%40vrinAdm1n"
-        
-        # FIX: Disable Redis dependency which caused CrashLoopBackOff
-        - name: REDIS_ENABLED
-          value: "false"
 
-        # Keep this to avoid DNS resolution failure
-        # Force Redis host to a non-DNS crashing value (e.g. localhost)
-        - name: REDIS_HOST
-          value: "127.0.0.1:6379"
-
-        # Overriding the connection address read by the app
-        # Use a non-resolvable host to prevent DNS panic
-        - name: REDIS_ADDR
-          value: "127.0.0.1:6379"
-
-        # NEW: Set the timezone to match the CET/CEST timezone
+        # Set the timezone to match the CET/CEST timezone
         - name: TZ
           value: "Europe/Zurich"

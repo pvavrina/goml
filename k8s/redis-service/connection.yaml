@@ -1,0 +1,16 @@
+# File: k8s/redis-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379 # The port MLSolid will use to connect
+      targetPort: 6379 # The port inside the Redis container
+  type: ClusterIP # Internal service only accessible within the cluster
+

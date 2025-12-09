@@ -2,19 +2,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-# CRD Traefik MUST be applied first
+# CRD Traefik 
 - traefik/traefik-crd-full.yaml
 
-# Traefik Resources
+# Traefik 
 - traefik/middleware-redirect.yaml
 
-# Cert-Manager Resources
+# Cert-Manager
 - cert-manager/issuer-selfsigned.yaml
 
 # PostgreSQL Database for Strapi
 - strapi-db/postgres-pvc.yaml
 - strapi-db/postgres-deployment.yaml
 - strapi-db/postgres-service.yaml
+- postgres/service.yaml
 
 # Strapi Application
 - strapi-app/strapi-deployment.yaml
@@ -23,20 +24,20 @@ resources:
 # Strapi Network
 - strapi-network/strapi-ingress.yaml
 
-# Go Service Resources
+# Go Service
 - goml-api/deployment.yaml  
 - goml-service/connection.yaml
 - goml-network/ingress.yaml
 
-# 🚀 Angular Frontend Resources
+# 🚀 Angular Frontend
 - angular-app/deployment.yaml
 - angular-service/connection.yaml
 - angular-network/ingress.yaml
 
-# MLSolid Tracking Service Resources
+# MLSolid Tracking
 - mlsolid-app/deployment.yaml
 - mlsolid-service/connection.yaml
 
-# PostgreSQL Service
-# Enables CoreDNS name resolution for database access.
-- postgres/service.yaml
+# Redis Web Caching
+- redis-app/deployments.yaml
+- redis-service/connection.yaml
