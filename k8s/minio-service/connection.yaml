@@ -1,0 +1,18 @@
+# k8s/minio-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  # This Service name will be the DNS name inside the cluster: http://minio-service
+  name: minio-service
+spec:
+  selector:
+    app: minio
+  ports:
+    - name: api
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    - name: console
+      protocol: TCP
+      port: 9001
+      targetPort: 9001
