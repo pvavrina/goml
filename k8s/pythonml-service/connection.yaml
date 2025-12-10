@@ -1,0 +1,12 @@
+# k8s/pythonml-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-service-python-service
+spec:
+  selector:
+    app: ml-service-python
+  ports:
+    - protocol: TCP
+      port: 80  # ClusterIP service port
+      targetPort: 8000 # The container port

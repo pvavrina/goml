@@ -1,0 +1,36 @@
+# k8s/pythonml-api/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service-python-deployment
+  labels:
+    app: ml-service-python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-service-python
+  template:
+    metadata:
+      labels:
+        app: ml-service-python
+    spec:
+      containers:
+      - name: ml-service-python
+        image: vaporist/ml-service-python:v1.0
+        ports:
+        - containerPort: 8000  # The port exposed by Uvicorn in the Dockerfile
+        # Health checks (Liveness/Readiness probes) are essential for MLOps
+        # They will call the /health endpoint we created in app/main.py
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

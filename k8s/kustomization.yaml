@@ -24,7 +24,7 @@ resources:
 # Strapi Network
 - strapi-network/strapi-ingress.yaml
 
-# Go Service
+# Go API
 - goml-api/deployment.yaml  
 - goml-service/connection.yaml
 - goml-network/ingress.yaml
@@ -41,3 +41,7 @@ resources:
 # Redis Web Caching
 - redis-app/deployments.yaml
 - redis-service/connection.yaml
+
+# Python API
+- pythonml-api/deployment.yaml
+- pythonml-service/connection.yaml
