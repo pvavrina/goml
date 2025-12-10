@@ -1,0 +1,37 @@
+# k8s/minio-storage/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  labels:
+    app: minio
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        args:
+        - server
+        - /data
+        env:
+        - name: MINIO_ROOT_USER
+          value: "minioadmin"  # Access key for MinIO
+        - name: MINIO_ROOT_PASSWORD
+          value: "minioadmin"  # Secret key for MinIO
+        ports:
+        - containerPort: 9000  # API port
+        - containerPort: 9001  # Console port
+        volumeMounts:
+        - name: minio-storage
+          mountPath: /data
+      volumes:
+      - name: minio-storage
+        emptyDir: {}  # Ephemeral storage for demonstration

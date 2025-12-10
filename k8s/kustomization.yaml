@@ -45,3 +45,7 @@ resources:
 # Python API
 - pythonml-api/deployment.yaml
 - pythonml-service/connection.yaml
+
+# 📦 MinIO S3 Object Storage
+- minio-storage/deployment.yaml
+- minio-service/connection.yaml
