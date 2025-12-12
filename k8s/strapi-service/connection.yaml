@@ -1,4 +1,4 @@
-# strapi-service.yaml
+# k8s/strapi-service/connection.yaml
 apiVersion: v1
 kind: Service
 metadata:

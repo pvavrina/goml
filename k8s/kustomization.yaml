@@ -12,17 +12,16 @@ resources:
 - cert-manager/issuer-selfsigned.yaml
 
 # PostgreSQL Database for Strapi
-- strapi-db/postgres-pvc.yaml
-- strapi-db/postgres-deployment.yaml
-- strapi-db/postgres-service.yaml
-- postgres/service.yaml
+- strapi-db/pvc.yaml
+- strapi-db/deployment.yaml
+- strapi-db/service.yaml
 
 # Strapi Application
-- strapi-app/strapi-deployment.yaml
-- strapi-app/strapi-service.yaml
+- strapi-app/deployment.yaml
+- strapi-service/connection.yaml
 
 # Strapi Network
-- strapi-network/strapi-ingress.yaml
+- strapi-network/ingress.yaml
 
 # Go API
 - goml-api/deployment.yaml  
@@ -39,7 +38,7 @@ resources:
 - mlsolid-service/connection.yaml
 
 # Redis Web Caching
-- redis-app/deployments.yaml
+- redis-app/deployment.yaml
 - redis-service/connection.yaml
 
 # Python API

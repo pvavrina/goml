@@ -1,4 +1,4 @@
-# strapi-deployment.yaml
+# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +19,7 @@ spec:
       containers:
         - name: strapi
           # Replace 'YOUR_STRAPI_IMAGE' with the name of your Strapi Docker image (e.g., my-strapi-app:v1)
-          image: vaporist/strapi-cms:5.x-admin-fix
+          image: vaporist/strapi-cms:5.x-admin-fix-v2
           imagePullPolicy: Always # Set to guarantee the latest Docker image (with pg) is pulled
           ports:
             - containerPort: 1337 # Default Strapi port
