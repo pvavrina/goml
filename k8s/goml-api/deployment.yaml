@@ -37,11 +37,12 @@ spec:
         # IMPORTANT: Use the URL-encoded password to handle the '@' character
         - name: DATABASE_PASSWORD
           value: "V%40vrinAdm1n"
-
-        # NEW: Set the timezone to match the CET/CEST timezone
+        # Set the timezone to match the CET/CEST timezone
         - name: TZ
           value: "Europe/Zurich"  
-
+        # URL for the Strapi headless CMS API 
+        - name: STRAPI_API_URL
+          value: http://strapi-clusterip-service/api
         
         resources:
           requests:
