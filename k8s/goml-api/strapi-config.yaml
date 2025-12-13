@@ -1,0 +1,9 @@
+# k8s/goml-api/strapi-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-service-strapi-config # Name of the ConfigMap
+  namespace: go-mlops # Ensure this matches your deployment namespace
+data:
+  # Key-value pairs for environment variables
+  STRAPI_API_URL: "http://strapi-clusterip-service/api" # Internal K8s service URL

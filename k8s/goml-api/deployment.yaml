@@ -41,8 +41,11 @@ spec:
         - name: TZ
           value: "Europe/Zurich"  
         # URL for the Strapi headless CMS API 
-        - name: STRAPI_API_URL
-          value: http://strapi-clusterip-service/api
+        - name: STRAPI_API_URL # URL for the Strapi headless CMS API
+          valueFrom:
+            configMapKeyRef:
+              name: ml-service-strapi-config # Name of the ConfigMap created above
+              key: STRAPI_API_URL # Key inside the ConfigMap to retrieve
         
         resources:
           requests:

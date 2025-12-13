@@ -25,6 +25,7 @@ resources:
 
 # Go API
 - goml-api/deployment.yaml  
+- goml-api/strapi-config.yaml
 - goml-service/connection.yaml
 - goml-network/ingress.yaml
 
