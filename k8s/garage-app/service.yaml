@@ -1,0 +1,33 @@
+# k8s/garage-service/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-daemon
+  namespace: garage
+spec:
+  # Headless service for inter-node communication (RPC)
+  clusterIP: None 
+  selector:
+    app: garage
+  ports:
+    - name: rpc
+      port: 3901
+      targetPort: 3901
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-s3
+  namespace: garage
+spec:
+  # ClusterIP for application access (S3 API and Admin)
+  type: ClusterIP
+  selector:
+    app: garage
+  ports:
+    - name: s3-api
+      port: 3900
+      targetPort: 3900
+    - name: admin-api
+      port: 3903
+      targetPort: 3903

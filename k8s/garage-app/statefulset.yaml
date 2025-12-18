@@ -1,0 +1,63 @@
+# k8s/garage-storage/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: garage
+spec:
+  # Ensuring stable network identity for distributed storage
+  serviceName: "garage"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: garage
+  template:
+    metadata:
+      labels:
+        app: garage
+    spec:
+      containers:
+      - name: garage
+        # Official Garage image (Rust-based S3 alternative)
+        image: dxflrs/garage:v0.9.0
+        args: ["/usr/local/bin/garage", "server"]
+        env:
+        - name: RUST_LOG
+          value: "info"
+        ports:
+        - containerPort: 3900
+          name: s3-api
+        - containerPort: 3901
+          name: rpc
+        - containerPort: 3903
+          name: admin-api
+        volumeMounts:
+        - name: config
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+        - name: meta
+          # Directory for metadata (db, logs)
+          mountPath: /var/lib/garage/meta
+        - name: data
+          # Directory for actual S3 objects
+          mountPath: /var/lib/garage/data
+      volumes:
+      - name: config
+        configMap:
+          name: garage-config
+  volumeClaimTemplates:
+  - metadata:
+      name: meta
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          # Small storage for database indexing
+          storage: 1Gi
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          # Main storage for ML models and files
+          storage: 10Gi

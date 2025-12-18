@@ -1,4 +1,4 @@
-# kustomization.yaml
+# k8s/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -49,3 +49,6 @@ resources:
 # 📦 MinIO S3 Object Storage
 - minio-storage/deployment.yaml
 - minio-service/connection.yaml
+
+# 📦 Garage S3 Object Storage Components
+- garage-app
