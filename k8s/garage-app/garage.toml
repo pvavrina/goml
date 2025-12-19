@@ -13,6 +13,7 @@ rpc_secret = "generate_a_secure_token_here"
 
 # S3 API configuration
 [s3_api]
+s3_region = "garage"
 api_bind_addr = "[::]:3900"
 root_domain = ".s3.garage.localhost"
 region = "garage"
