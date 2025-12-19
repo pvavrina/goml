@@ -19,11 +19,13 @@ spec:
       - name: garage
         # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
+        command: ["/bin/sh", "-c"]
         args:
-          - /garage
-          - -c
-          - /dev/null
-          - server
+          - |
+            echo 'metadata_dir = "/var/lib/garage/meta"' > /tmp/garage.toml
+            echo 'data_dir = "/var/lib/garage/data"' >> /tmp/garage.toml
+            echo 'db_engine = "lmdb"' >> /tmp/garage.toml
+            /garage -c /tmp/garage.toml server
         env:
         - name: GARAGE_METADATA_DIR
           value: "/var/lib/garage/meta"
