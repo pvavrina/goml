@@ -21,7 +21,7 @@ metadata:
   namespace: garage
 spec:
   # ClusterIP for application access (S3 API and Admin)
-  type: ClusterIP
+  type: NodePort
   selector:
     app: garage
   ports:

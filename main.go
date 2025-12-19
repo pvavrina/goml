@@ -10,10 +10,15 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	// Import your internal storage package
+	"github.com/pvavrina/goml/internal/storage"
 	
 	// Alias the generated gRPC stubs package
-	mlservice "github.com/pvavrina/goml/api/mlservice" 
+	mlservice "github.com/pvavrina/goml/api/mlservice"
 )
+
+var storageClient *storage.Client
 
 // Handler for the root endpoint (Used by / and /ping for health checks)
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -33,11 +38,10 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. Get the gRPC address from environment variable
 	mlSolidAddr := os.Getenv("MLSOLID_SERVICE_ADDR")
 	if mlSolidAddr == "" {
-		mlSolidAddr = "mlsolid-service:5000" // Fallback, but should be set by K8s
+		mlSolidAddr = "mlsolid-service:5000"
 	}
 
 	// 2. Setup gRPC connection
-	// Use insecure credentials because it is internal K8s communication
 	conn, err := grpc.NewClient(mlSolidAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("FATAL: Failed to connect to MLSolid gRPC service (%s): %v", mlSolidAddr, err)
@@ -48,21 +52,16 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		if cErr := conn.Close(); cErr != nil {
 			log.Printf("Warning: Failed to close gRPC connection: %v", cErr)
 		}
-	}() // Close the connection when the handler exits
+	}()
 
 	// 3. Create gRPC client and context
-	// Using the validated function name: NewMlsolidServiceClient
-	client := mlservice.NewMlsolidServiceClient(conn) 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5) // 5 seconds timeout
-	defer cancel() // Release resources tied to the context
+	client := mlservice.NewMlsolidServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 
-	// 4. Perform the gRPC call (Attempt to list experiments to find valid names)
-	
-	// Using an empty ExperimentsRequest to list available experiments.
+	// 4. Perform the gRPC call
 	req := &mlservice.ExperimentsRequest{}	
-	
-	// Attempting to call the ListExperiments method.
-	resp, err := client.Experiments(ctx, req) 
+	resp, err := client.Experiments(ctx, req)
 	
 	if err != nil {
 		log.Printf("gRPC Call Error: Failed to list experiments: %v", err)
@@ -71,17 +70,24 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. Success response
-    // Print the entire response object (using %+v) to inspect the list of experiments.
 	log.Printf("gRPC Call SUCCESS. Received response object: %+v", resp)
 	
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	// The response will show the list of experiments (or an error if the method is incorrect).
 	responseBody := fmt.Sprintf(`{"status": "SUCCESS", "response_data": "%+v"}`, resp)
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(responseBody))
 }
 
 func main() {
+	// Initialize S3 Storage Client
+	ctx := context.Background()
+	var err error
+	storageClient, err = storage.NewClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize storage client: %v", err)
+	}
+	log.Println("✅ Storage client (Garage) initialized successfully")
+
 	// Uses the PORT environment variable, defaults to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -90,7 +96,7 @@ func main() {
 
 	// ROUTING: Map handlers to endpoints
 	http.HandleFunc("/", handler)
-	http.HandleFunc("/predict", predictHandler)	
+	http.HandleFunc("/predict", predictHandler)
 
 	log.Printf("Starting Go service on port %s", port)
 
