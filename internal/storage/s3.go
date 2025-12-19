@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -52,4 +53,17 @@ func NewClient(ctx context.Context) (*Client, error) {
 		S3Client: s3.NewFromConfig(cfg),
 		Bucket:   bucket,
 	}, nil
+}
+
+// SaveObject uploads data to the S3 bucket with the specified key
+func (c *Client) SaveObject(ctx context.Context, key string, data []byte) error {
+	_, err := c.S3Client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(c.Bucket),
+		Key:    aws.String(key),
+		Body:   bytes.NewReader(data),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upload object %s: %w", key, err)
+	}
+	return nil
 }

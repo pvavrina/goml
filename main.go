@@ -20,62 +20,63 @@ import (
 
 var storageClient *storage.Client
 
-// Handler for the root endpoint (Used by / and /ping for health checks)
+// Handler for the root endpoint (Used for health checks)
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received on path: %s", r.URL.Path)
-
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	_, err := fmt.Fprintf(w, "ML Service Go (SLES) is running. Status: OK!")
-	if err != nil {
-		log.Printf("Error writing response: %v", err)
-	}
+	_, _ = fmt.Fprintf(w, "ML Service Go (SLES) is running. Status: OK!")
 }
 
-// Handler for the /predict endpoint. Triggers the gRPC call to MLSolid.
+// Handler for the /predict endpoint. Triggers gRPC and saves result to S3.
 func predictHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request received on path: %s. Attempting gRPC call to MLSolid.", r.URL.Path)
+	log.Printf("Request received: /predict. Attempting gRPC call.")
 	
-	// 1. Get the gRPC address from environment variable
+	// 1. Setup gRPC connection
 	mlSolidAddr := os.Getenv("MLSOLID_SERVICE_ADDR")
 	if mlSolidAddr == "" {
 		mlSolidAddr = "mlsolid-service:5000"
 	}
 
-	// 2. Setup gRPC connection
 	conn, err := grpc.NewClient(mlSolidAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("FATAL: Failed to connect to MLSolid gRPC service (%s): %v", mlSolidAddr, err)
-		http.Error(w, fmt.Sprintf("gRPC Connection Error: %v", err), http.StatusInternalServerError)
+		log.Printf("FATAL: Failed to connect to MLSolid: %v", err)
+		http.Error(w, "gRPC Connection Error", http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if cErr := conn.Close(); cErr != nil {
-			log.Printf("Warning: Failed to close gRPC connection: %v", cErr)
-		}
-	}()
+	defer conn.Close()
 
-	// 3. Create gRPC client and context
 	client := mlservice.NewMlsolidServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	// 4. Perform the gRPC call
+	// 2. Perform the gRPC call
 	req := &mlservice.ExperimentsRequest{}	
 	resp, err := client.Experiments(ctx, req)
-	
 	if err != nil {
-		log.Printf("gRPC Call Error: Failed to list experiments: %v", err)
-		http.Error(w, fmt.Sprintf("gRPC Call Error: %v", err), http.StatusServiceUnavailable)
+		log.Printf("gRPC Call Error: %v", err)
+		http.Error(w, "gRPC Call Failed", http.StatusServiceUnavailable)
 		return
 	}
 
-	// 5. Success response
-	log.Printf("gRPC Call SUCCESS. Received response object: %+v", resp)
+	// 3. PERSISTENCE: Save the result to Garage (S3)
+	timestamp := time.Now().Format("20060102-150405")
+	filename := fmt.Sprintf("prediction-%s.json", timestamp)
 	
+	// Prepare the data to save
+	payload := []byte(fmt.Sprintf("%+v", resp))
+
+	err = storageClient.SaveObject(ctx, filename, payload)
+	if err != nil {
+		log.Printf("Warning: Failed to persist data to Garage: %v", err)
+		// We continue to serve the request even if storage fails
+	} else {
+		log.Printf("✅ Result successfully persisted to Garage as: %s", filename)
+	}
+
+	// 4. Success response to client
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	responseBody := fmt.Sprintf(`{"status": "SUCCESS", "response_data": "%+v"}`, resp)
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(responseBody))
+	_, _ = fmt.Fprintf(w, `{"status": "SUCCESS", "stored_file": "%s", "data": "%+v"}`, filename, resp)
 }
 
 func main() {
@@ -84,22 +85,20 @@ func main() {
 	var err error
 	storageClient, err = storage.NewClient(ctx)
 	if err != nil {
-		log.Fatalf("Failed to initialize storage client: %v", err)
+		log.Fatalf("Critical: Could not initialize storage client: %v", err)
 	}
 	log.Println("✅ Storage client (Garage) initialized successfully")
 
-	// Uses the PORT environment variable, defaults to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// ROUTING: Map handlers to endpoints
+	// ROUTING
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/predict", predictHandler)
 
 	log.Printf("Starting Go service on port %s", port)
-
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
