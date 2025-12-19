@@ -19,11 +19,11 @@ spec:
       - name: garage
         # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
-        args: # <--- Ajoute ce bloc
+        args:
           - /garage
-          - server
           - -c
           - /dev/null
+          - server
         env:
         - name: GARAGE_METADATA_DIR
           value: "/var/lib/garage/meta"
