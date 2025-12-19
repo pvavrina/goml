@@ -1,10 +1,9 @@
-# k8s/garage-storage/statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: garage
+  namespace: garage
 spec:
-  # Ensuring stable network identity for distributed storage
   serviceName: "garage"
   replicas: 1
   selector:
@@ -17,20 +16,7 @@ spec:
     spec:
       containers:
       - name: garage
-        # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
-        volumeMounts:
-        - name: meta
-          mountPath: /var/lib/garage/meta
-        - name: data
-          mountPath: /var/lib/garage/data
-        - name: config-volume
-          mountPath: /etc/garage.toml
-          subPath: garage.toml
-      volumes:
-      - name: config-volume
-        configMap:
-          name: garage-config
         env:
         - name: GARAGE_METADATA_DIR
           value: "/var/lib/garage/meta"
@@ -48,22 +34,20 @@ spec:
           value: "[::]:3900"
         - name: GARAGE_S3_ROOT_DOMAIN
           value: ".s3.garage"
-        - name: RUST_LOG
-          value: "info"
-        ports:
-        - containerPort: 3900
-          name: s3-api
-        - containerPort: 3901
-          name: rpc
-        - containerPort: 3903
-          name: admin-api
+        - name: GARAGE_ADMIN_API_BIND_ADDR
+          value: "[::]:3903"
         volumeMounts:
         - name: meta
-          # Directory for metadata (db, logs)
           mountPath: /var/lib/garage/meta
         - name: data
-          # Directory for actual S3 objects
           mountPath: /var/lib/garage/data
+        - name: config-volume
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: garage-config
   volumeClaimTemplates:
   - metadata:
       name: meta
@@ -71,7 +55,6 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          # Small storage for database indexing
           storage: 1Gi
   - metadata:
       name: data
@@ -79,5 +62,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          # Main storage for ML models and files
           storage: 10Gi
