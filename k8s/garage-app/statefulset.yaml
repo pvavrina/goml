@@ -19,12 +19,23 @@ spec:
       - name: garage
         # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
-        args:
-          - /garage
-          - "-c"
-          - "/etc/garage.toml"
-          - server
         env:
+        - name: GARAGE_METADATA_DIR
+          value: "/var/lib/garage/meta"
+        - name: GARAGE_DATA_DIR
+          value: "/var/lib/garage/data"
+        - name: GARAGE_REPLICATION_MODE
+          value: "none"
+        - name: GARAGE_RPC_BIND_ADDR
+          value: "[::]:3901"
+        - name: GARAGE_RPC_SECRET
+          value: "9d15abb685c2fe3c487af278be5f4789b2720c7268669bb589cb9650153f7519"
+        - name: GARAGE_S3_REGION
+          value: "garage"
+        - name: GARAGE_S3_API_BIND_ADDR
+          value: "[::]:3900"
+        - name: GARAGE_S3_ROOT_DOMAIN
+          value: ".s3.garage"
         - name: RUST_LOG
           value: "info"
         ports:
@@ -35,19 +46,12 @@ spec:
         - containerPort: 3903
           name: admin-api
         volumeMounts:
-        - name: config
-          mountPath: /etc/garage.toml
-          subPath: garage.toml
         - name: meta
           # Directory for metadata (db, logs)
           mountPath: /var/lib/garage/meta
         - name: data
           # Directory for actual S3 objects
           mountPath: /var/lib/garage/data
-      volumes:
-      - name: config
-        configMap:
-          name: garage-config
   volumeClaimTemplates:
   - metadata:
       name: meta
