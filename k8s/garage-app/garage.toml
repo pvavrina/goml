@@ -1,23 +1,27 @@
-# Metadata and Data directories configuration
+# Main storage directories for metadata and data
 metadata_dir = "/var/lib/garage/meta"
 data_dir = "/var/lib/garage/data"
-db_engine = "lmdb"
 
-# Replication factor (set to 1 for single-node development)
-replication_factor = 1
+# Replication settings: 'none' is mandatory for single-node setups
+replication_mode = "none"
 
-# RPC configuration for cluster communication
+[rpc_api]
+# Port for internal cluster communication
 rpc_bind_addr = "[::]:3901"
-rpc_public_addr = "localhost:3901"
-rpc_secret = "generate_a_secure_token_here"
+# Secret key used for node-to-node authentication
+rpc_secret = "9d15abb685c2fe3c487af278be5f4789b2720c7268669bb589cb9650153f7519"
 
-# S3 API configuration
 [s3_api]
+# Region name (required for S3 API compatibility)
 s3_region = "garage"
 api_bind_addr = "[::]:3900"
-root_domain = ".s3.garage.localhost"
-region = "garage"
+root_domain = ".s3.garage"
 
-# Admin API configuration
+[s3_web]
+# Port for static web hosting over S3
+bind_addr = "[::]:3902"
+root_domain = ".web.garage"
+
 [admin]
+# Management API port
 api_bind_addr = "[::]:3903"
