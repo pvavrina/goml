@@ -19,13 +19,18 @@ spec:
       - name: garage
         # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
-        command: ["sh", "-c"]
-        args:
-          - |
-            echo 'metadata_dir = "/var/lib/garage/meta"' > /tmp/garage.toml && \
-            echo 'data_dir = "/var/lib/garage/data"' >> /tmp/garage.toml && \
-            echo 'db_engine = "lmdb"' >> /tmp/garage.toml && \
-            /garage -c /tmp/garage.toml server
+        volumeMounts:
+        - name: meta
+          mountPath: /var/lib/garage/meta
+        - name: data
+          mountPath: /var/lib/garage/data
+        - name: config-volume
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: garage-config
         env:
         - name: GARAGE_METADATA_DIR
           value: "/var/lib/garage/meta"
