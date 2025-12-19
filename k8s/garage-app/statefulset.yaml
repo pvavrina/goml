@@ -19,7 +19,9 @@ spec:
       - name: garage
         # Official Garage image (Rust-based S3 alternative)
         image: dxflrs/garage:v0.9.0
-        args: ["/usr/local/bin/garage", "server"]
+        args:
+          - /garage
+          - server
         env:
         - name: RUST_LOG
           value: "info"
