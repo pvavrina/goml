@@ -1,10 +1,10 @@
-# k8s/go-app/deployment.yaml
+# k8s/goml-api/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ml-service-go-deployment
 spec:
-  # Ensure 1 replica is always running
+  # Maintain exactly one instance of the application
   replicas: 1
   selector:
     matchLabels:
@@ -16,16 +16,35 @@ spec:
     spec:
       containers:
       - name: ml-service-go-container
-        # Image from your Docker Hub repository
-        image: vaporist/goml:v4.1
+        # Updated image tag (v4.2) to include the new S3 storage logic
+        image: vaporist/goml:v4.2
         ports:
         - containerPort: 8080
-        # Always pull the image for potential updates or testing
         imagePullPolicy: Always
         env:
+        # 🌐 gRPC connection string to the MLSolid service
         - name: MLSOLID_SERVICE_ADDR
           value: "mlsolid-service:5000"
-        # PostgreSQL/Strapi Database Connection
+
+        # 📦 Garage S3 Configuration: These variables are used by internal/storage/s3.go
+        - name: S3_ENDPOINT
+          value: "http://garage-s3.garage.svc.cluster.local:3900"
+        - name: S3_BUCKET
+          value: "goml-data"
+        
+        # 🔑 Sensitive credentials retrieved from a Kubernetes Secret
+        - name: SA_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: garage-secret
+              key: access-key
+        - name: SA_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: garage-secret
+              key: secret-key
+
+        # 🗄️ Database configuration for PostgreSQL/Strapi
         - name: DATABASE_HOST
           value: "postgres-service"
         - name: DATABASE_PORT
@@ -34,32 +53,28 @@ spec:
           value: "strapiuser"
         - name: DATABASE_NAME
           value: "mlflow_db"
-        # IMPORTANT: Use the URL-encoded password to handle the '@' character
         - name: DATABASE_PASSWORD
           value: "V%40vrinAdm1n"
-        # Set the timezone to match the CET/CEST timezone
+
+        # 🌍 Regional and External API settings
         - name: TZ
           value: "Europe/Zurich"  
-        # URL for the Strapi headless CMS API 
-        - name: STRAPI_API_URL # URL for the Strapi headless CMS API
+        - name: STRAPI_API_URL
           valueFrom:
             configMapKeyRef:
-              name: ml-service-strapi-config # Name of the ConfigMap created above
-              key: STRAPI_API_URL # Key inside the ConfigMap to retrieve
+              name: ml-service-strapi-config
+              key: STRAPI_API_URL
         
+        # ⚖️ Resource management: defines how much CPU/RAM the pod can use
         resources:
           requests:
-            # Request 100 millicores of CPU
             cpu: "100m"
-            # Request 64 Megabytes of Memory
             memory: "64Mi"
           limits:
-            # Hard limit of 200 millicores of CPU
             cpu: "200m"
-            # Hard limit of 128 Megabytes of Memory
             memory: "128Mi"
             
-        # 🟢 CRITICAL ADDITION: Liveness and Readiness Probes
+        # 🩺 Probes to ensure the container is healthy and ready to receive traffic
         livenessProbe:
           httpGet:
             path: /
@@ -72,5 +87,3 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 15
-
-        
