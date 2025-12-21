@@ -27,7 +27,7 @@ spec:
         - name: DATABASE_TYPE
           value: "postgres"
         - name: DATABASE_HOST
-          value: "postgres-service" # Internal K8s service name
+          value: "postgres-clusterip-service" # Internal K8s service name
         - name: DATABASE_PORT
           value: "5432"
         - name: DATABASE_USER
