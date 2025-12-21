@@ -47,8 +47,8 @@ resources:
 - pythonml-service/connection.yaml
 
 # 📦 MinIO S3 Object Storage
-- minio-storage/deployment.yaml
-- minio-service/connection.yaml
+#- minio-storage/deployment.yaml
+#- minio-service/connection.yaml
 
 # 📦 Garage S3 Object Storage Components
 - garage-app

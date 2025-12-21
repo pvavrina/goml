@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -58,29 +59,49 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 3. PERSISTENCE: Save the result to Garage (S3)
+	// 3. PERSISTENCE: Save the result to Garage (S3) as structured JSON
 	timestamp := time.Now().Format("20060102-150405")
 	filename := fmt.Sprintf("prediction-%s.json", timestamp)
 	
-	// Prepare the data to save
-	payload := []byte(fmt.Sprintf("%+v", resp))
+	// Create a map to structure the JSON output (v4.3)
+	dataMap := map[string]interface{}{
+		"timestamp": timestamp,
+		"source":    "mlsolid-python",
+		"exp_ids":   resp.GetExpIds(), // Extract repeated string field from gRPC response
+		"status":    "recorded_ok",
+	}
+	
+	// Marshal data with indentation for better readability in the data lake
+	payload, err := json.MarshalIndent(dataMap, "", "  ")
+	if err != nil {
+		log.Printf("Error marshaling JSON: %v", err)
+		payload = []byte(`{"error": "failed to marshal response"}`)
+	}
 
+	// Save the structured JSON object to Garage
 	err = storageClient.SaveObject(ctx, filename, payload)
 	if err != nil {
 		log.Printf("Warning: Failed to persist data to Garage: %v", err)
 		// We continue to serve the request even if storage fails
 	} else {
-		log.Printf("✅ Result successfully persisted to Garage as: %s", filename)
+		log.Printf("✅ Result persisted to Garage: %s (%d bytes)", filename, len(payload))
 	}
 
-	// 4. Success response to client
+	// 4. Success response to client with full JSON data
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = fmt.Fprintf(w, `{"status": "SUCCESS", "stored_file": "%s", "data": "%+v"}`, filename, resp)
+	
+	responsePayload := map[string]interface{}{
+		"status":      "SUCCESS",
+		"stored_file": filename,
+		"data":        resp.GetExpIds(),
+	}
+	
+	json.NewEncoder(w).Encode(responsePayload)
 }
 
 func main() {
-	// Initialize S3 Storage Client
+	// Initialize S3 Storage Client (Garage)
 	ctx := context.Background()
 	var err error
 	storageClient, err = storage.NewClient(ctx)
