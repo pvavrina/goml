@@ -25,10 +25,14 @@ spec:
           mountPath: /artifacts
       containers:
       - name: mlsolid-container
-        image: vaporist/mlsolid:v1.2
+        # v1.3: Align gRPC port to 50051 to match the Kubernetes Service definition
+        image: vaporist/mlsolid:v1.3
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - name: grpc
+          containerPort: 50051
+        - name: rest
+          containerPort: 5000
         env:
         - name: DATABASE_TYPE
           value: postgres
