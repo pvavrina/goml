@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
       - name: ml-service-go-container
-        # Updated image tag (v4.2) to include the new S3 storage logic
-        image: vaporist/goml:v4.3
+        # v5: Integrated gRPC client and S3 Garage logic
+        image: vaporist/goml:v5
         ports:
         - containerPort: 8080
         imagePullPolicy: Always

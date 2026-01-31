@@ -50,8 +50,11 @@ func NewClient(ctx context.Context) (*Client, error) {
 	}
 
 	return &Client{
-		S3Client: s3.NewFromConfig(cfg),
-		Bucket:   bucket,
+		// Force path-style addressing for Garage compatibility
+		S3Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.UsePathStyle = true
+		}),
+		Bucket: bucket,
 	}, nil
 }
 

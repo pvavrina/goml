@@ -1,10 +1,11 @@
-# k8s/mlsolid-app/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlsolid-deployment
+  namespace: go-mlops
+  labels:
+    app: mlsolid-service
 spec:
-  # Deployment for the MLSolid Tracking Service (Go)
   replicas: 1
   selector:
     matchLabels:
@@ -14,30 +15,40 @@ spec:
       labels:
         app: mlsolid-service
     spec:
+      # Pre-start: setup index file and model directory for the registry
+      initContainers:
+      - name: init-artifacts
+        image: busybox:1.28
+        command: ['sh', '-c', 'mkdir -p /artifacts/models && touch /artifacts/idx && touch /artifacts/models/v1.bin']
+        volumeMounts:
+        - name: artifacts-storage
+          mountPath: /artifacts
       containers:
       - name: mlsolid-container
-        # FIX: Use custom built image instead of inaccessible zeddo123/mlsolid:latest
-        image: vaporist/mlsolid:v1.2 
+        image: vaporist/mlsolid:v1.2
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
-        imagePullPolicy: Always
-        
-        # Environment variables for PostgreSQL connection
         env:
         - name: DATABASE_TYPE
-          value: "postgres"
+          value: postgres
         - name: DATABASE_HOST
-          value: "postgres-clusterip-service" # Internal K8s service name
+          value: postgres-clusterip-service
         - name: DATABASE_PORT
           value: "5432"
         - name: DATABASE_USER
-          value: "strapiuser" # Assuming the same user has access to create tables
+          value: strapiuser
         - name: DATABASE_NAME
-          value: "mlsolid_db" # A new database for MLSolid
-        # IMPORTANT: Use the URL-encoded password
+          value: mlsolid_db
+        # Ensure password is plain text
         - name: DATABASE_PASSWORD
-          value: "V%40vrinAdm1n"
-
-        # Set the timezone to match the CET/CEST timezone
+          value: V@vrinAdm1n
         - name: TZ
-          value: "Europe/Zurich"
+          value: Europe/Zurich
+        # Mounting directly to root /artifacts as expected by binary relative path
+        volumeMounts:
+        - name: artifacts-storage
+          mountPath: /artifacts
+      volumes:
+      - name: artifacts-storage
+        emptyDir: {}

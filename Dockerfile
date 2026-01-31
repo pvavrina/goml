@@ -1,42 +1,34 @@
-# ----------------------------------------------------------------------
-# Stage 1: Builder
-# ----------------------------------------------------------------------
+# Stage 1: Build the Go binary
 FROM golang:1.24-alpine AS builder
 
-# Install git because 'go mod tidy' might need it to resolve external dependencies
-RUN apk add --no-cache git
+# Install git and certificates
+RUN apk add --no-cache git ca-certificates
 
-# Set the working directory
 WORKDIR /app
 
-# Copy go.mod and go.sum (if it exists) to resolve dependencies first
+# Copy dependency files first for better caching
 COPY go.mod go.sum ./
-
-# Download dependencies (this caches external dependencies)
 RUN go mod download
 
-# 🟢 Copy all source files
-COPY main.go .
-COPY api api
-# CRITICAL: Copy your new internal storage package
-COPY internal internal
+# Copy all source files
+COPY . .
 
-# Update go.mod/go.sum and resolve the NEW gRPC and S3 imports
+# Ensure dependencies are clean and resolve gRPC/S3 imports
 RUN go mod tidy
 
-# Build the static executable
-RUN go build -o ml-service-go main.go
+# Build the static executable for portability (CGO_ENABLED=0 is key)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ml-service-go main.go
 
-# ----------------------------------------------------------------------
 # Stage 2: Final minimal image
-# ----------------------------------------------------------------------
 FROM alpine:latest
 
-# Set the working directory
+# Install CA certs to allow secure connections (S3/gRPC)
+RUN apk add --no-cache ca-certificates
+
 WORKDIR /app
 
-# Copy the built executable from the builder stage
+# Copy only the compiled binary
 COPY --from=builder /app/ml-service-go .
 
-# Set default command for the container
+# Command to run the service
 CMD ["./ml-service-go"]

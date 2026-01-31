@@ -5,122 +5,71 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
 	"time"
 
+	"github.com/pvavrina/goml/internal/storage"
+	pb "github.com/pvavrina/goml/proto" 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	// Import your internal storage package
-	"github.com/pvavrina/goml/internal/storage"
-	
-	// Alias the generated gRPC stubs package
-	mlservice "github.com/pvavrina/goml/api/mlservice"
 )
 
-var storageClient *storage.Client
+func main() {
+	// Define a context for the overall operation
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-// Handler for the root endpoint (Used for health checks)
-func handler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request received on path: %s", r.URL.Path)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	_, _ = fmt.Fprintf(w, "ML Service Go (SLES) is running. Status: OK!")
-}
-
-// Handler for the /predict endpoint. Triggers gRPC and saves result to S3.
-func predictHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request received: /predict. Attempting gRPC call.")
-	
-	// 1. Setup gRPC connection
-	mlSolidAddr := os.Getenv("MLSOLID_SERVICE_ADDR")
-	if mlSolidAddr == "" {
-		mlSolidAddr = "mlsolid-service:5000"
-	}
-
-	conn, err := grpc.NewClient(mlSolidAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Connect to the gRPC MlsolidService (Python service)
+	// Address should be the service name in your Kubernetes cluster
+	conn, err := grpc.Dial("mlsolid-service:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("FATAL: Failed to connect to MLSolid: %v", err)
-		http.Error(w, "gRPC Connection Error", http.StatusInternalServerError)
-		return
+		log.Fatalf("Failed to connect to gRPC service: %v", err)
 	}
 	defer conn.Close()
 
-	client := mlservice.NewMlsolidServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
+	client := pb.NewMlsolidServiceClient(conn)
 
-	// 2. Perform the gRPC call
-	req := &mlservice.ExperimentsRequest{}	
-	resp, err := client.Experiments(ctx, req)
-	if err != nil {
-		log.Printf("gRPC Call Error: %v", err)
-		http.Error(w, "gRPC Call Failed", http.StatusServiceUnavailable)
-		return
-	}
-
-	// 3. PERSISTENCE: Save the result to Garage (S3) as structured JSON
-	timestamp := time.Now().Format("20060102-150405")
-	filename := fmt.Sprintf("prediction-%s.json", timestamp)
-	
-	// Create a map to structure the JSON output (v4.3)
-	dataMap := map[string]interface{}{
-		"timestamp": timestamp,
-		"source":    "mlsolid-python",
-		"exp_ids":   resp.GetExpIds(), // Extract repeated string field from gRPC response
-		"status":    "recorded_ok",
-	}
-	
-	// Marshal data with indentation for better readability in the data lake
-	payload, err := json.MarshalIndent(dataMap, "", "  ")
-	if err != nil {
-		log.Printf("Error marshaling JSON: %v", err)
-		payload = []byte(`{"error": "failed to marshal response"}`)
-	}
-
-	// Save the structured JSON object to Garage
-	err = storageClient.SaveObject(ctx, filename, payload)
-	if err != nil {
-		log.Printf("Warning: Failed to persist data to Garage: %v", err)
-		// We continue to serve the request even if storage fails
-	} else {
-		log.Printf("✅ Result persisted to Garage: %s (%d bytes)", filename, len(payload))
-	}
-
-	// 4. Success response to client with full JSON data
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	
-	responsePayload := map[string]interface{}{
-		"status":      "SUCCESS",
-		"stored_file": filename,
-		"data":        resp.GetExpIds(),
-	}
-	
-	json.NewEncoder(w).Encode(responsePayload)
+	// Execute the data processing and storage logic
+	runDataPipeline(ctx, client)
 }
 
-func main() {
-	// Initialize S3 Storage Client (Garage)
-	ctx := context.Background()
-	var err error
-	storageClient, err = storage.NewClient(ctx)
+func runDataPipeline(ctx context.Context, client pb.MlsolidServiceClient) {
+	// Initialize the Garage S3 storage client
+	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Fatalf("Critical: Could not initialize storage client: %v", err)
-	}
-	log.Println("✅ Storage client (Garage) initialized successfully")
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+		log.Fatalf("Failed to initialize Garage storage: %v", err)
 	}
 
-	// ROUTING
-	http.HandleFunc("/", handler)
-	http.HandleFunc("/predict", predictHandler)
-
-	log.Printf("Starting Go service on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
+	// Request experiment IDs from the gRPC service
+	resp, err := client.Experiments(ctx, &pb.ExperimentsRequest{})
+	if err != nil {
+		log.Fatalf("Error calling gRPC Experiments: %v", err)
 	}
+
+	// Map response data to a JSON-friendly structure
+	payload := struct {
+		ExpIDs    []string `json:"exp_ids"`
+		Count     int      `json:"count"`
+		Timestamp int64    `json:"timestamp"`
+	}{
+		ExpIDs:    resp.GetExpIds(),
+		Count:     len(resp.GetExpIds()),
+		Timestamp: time.Now().Unix(),
+	}
+
+	// Serialize the payload to JSON format
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Fatalf("Failed to marshal experiment data: %v", err)
+	}
+
+	// Create a unique key using the current timestamp
+	objectKey := fmt.Sprintf("exports/experiments_%d.json", time.Now().Unix())
+
+	// Store the JSON file in the Garage bucket
+	err = storageClient.SaveObject(ctx, objectKey, jsonData)
+	if err != nil {
+		log.Fatalf("Failed to upload object to Garage: %v", err)
+	}
+
+	fmt.Printf("Pipeline successful: Saved %d IDs to Garage at %s\n", payload.Count, objectKey)
 }

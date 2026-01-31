@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+// Ensure the Go package path is correct
+option go_package = "github.com/pvavrina/goml/proto";
+
+service MlsolidService {
+  rpc Experiments (ExperimentsRequest) returns (ExperimentsResponse);
+}
+
+message ExperimentsRequest {}
+
+message ExperimentsResponse {
+  repeated string exp_ids = 1;
+}
