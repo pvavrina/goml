@@ -4,10 +4,14 @@ kind: Service
 metadata:
   name: mlsolid-service
 spec:
-  # ClusterIP Service for internal communication (Traitraitefik)
   selector:
     app: mlsolid-service
   ports:
-    - protocol: TCP
+    - name: grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+    - name: rest
+      protocol: TCP
       port: 5000
       targetPort: 5000
