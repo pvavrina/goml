@@ -1,19 +1,20 @@
+# k8s/mlsolid-app/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlsolid-deployment
   namespace: go-mlops
   labels:
-    app: mlsolid-service
+    app: mlsolid-app # Using a distinct label for the Go application
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mlsolid-service
+      app: mlsolid-app
   template:
     metadata:
       labels:
-        app: mlsolid-service
+        app: mlsolid-app
     spec:
       # Pre-start: setup index file and model directory for the registry
       initContainers:
@@ -23,17 +24,23 @@ spec:
         volumeMounts:
         - name: artifacts-storage
           mountPath: /artifacts
+      
       containers:
       - name: mlsolid-container
-        # v1.3: Align gRPC port to 50051 to match the Kubernetes Service definition
+        # Go application acting as gRPC client and REST server
         image: vaporist/mlsolid:v1.3
         imagePullPolicy: Always
         ports:
-        - name: grpc
-          containerPort: 50051
         - name: rest
-          containerPort: 5000
+          containerPort: 5000 # Main REST API port for the Go application
+        
         env:
+        # --- gRPC Client Configuration ---
+        # Points to the Python gRPC server defined in mlsolid-service/connection.yaml
+        - name: ML_SERVICE_URL
+          value: "mlsolid-service:50051"
+        
+        # --- Database Configuration (PostgreSQL) ---
         - name: DATABASE_TYPE
           value: postgres
         - name: DATABASE_HOST
@@ -44,15 +51,18 @@ spec:
           value: strapiuser
         - name: DATABASE_NAME
           value: mlsolid_db
-        # Ensure password is plain text
         - name: DATABASE_PASSWORD
           value: V@vrinAdm1n
+        
+        # --- System Settings ---
         - name: TZ
           value: Europe/Zurich
+        
         # Mounting directly to root /artifacts as expected by binary relative path
         volumeMounts:
         - name: artifacts-storage
           mountPath: /artifacts
+      
       volumes:
       - name: artifacts-storage
         emptyDir: {}

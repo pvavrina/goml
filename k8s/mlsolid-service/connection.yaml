@@ -5,7 +5,7 @@ metadata:
   name: mlsolid-service
 spec:
   selector:
-    app: mlsolid-service
+    app: ml-service-python  # Matches the label in your deployment
   ports:
     - name: grpc
       protocol: TCP
@@ -13,5 +13,5 @@ spec:
       targetPort: 50051
     - name: rest
       protocol: TCP
-      port: 5000
-      targetPort: 5000
+      port: 80         # Port accessible for other pods in the cluster
+      targetPort: 80   # Port where FastAPI listens inside the container

@@ -1,0 +1,45 @@
+# k8s/mlsolid-service/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service-python
+  labels:
+    app: ml-service-python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-service-python
+  template:
+    metadata:
+      labels:
+        app: ml-service-python
+    spec:
+      containers:
+      - name: ml-service-python
+        image: vaporist/ml-service-python:v1.4
+        imagePullPolicy: Always
+        ports:
+        - name: http-port
+          containerPort: 80
+        - name: grpc-port
+          containerPort: 50051
+        
+        # Health checks (Wait for FastAPI to be up before routing traffic)
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+        # Environment configuration
+        env:
+        - name: MINIO_ENDPOINT
+          value: "minio-service:9000"

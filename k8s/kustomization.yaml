@@ -37,6 +37,7 @@ resources:
 # MLSolid Tracking
 - mlsolid-app/deployment.yaml
 - mlsolid-service/connection.yaml
+- mlsolid-service/deployment.yaml
 
 # Redis Web Caching
 - redis-app/deployment.yaml
