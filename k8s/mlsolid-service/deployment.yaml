@@ -28,16 +28,16 @@ spec:
         # Health checks (Wait for FastAPI to be up before routing traffic)
         readinessProbe:
           httpGet:
-            path: /
+            path: /docs
             port: 80
-          initialDelaySeconds: 15
-          periodSeconds: 5
+          initialDelaySeconds: 45
+          periodSeconds: 10
         livenessProbe:
           httpGet:
-            path: /
+            path: /docs
             port: 80
-          initialDelaySeconds: 20
-          periodSeconds: 10
+          initialDelaySeconds: 90
+          periodSeconds: 15
 
         # Environment configuration
         env:
