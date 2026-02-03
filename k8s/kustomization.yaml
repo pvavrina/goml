@@ -17,8 +17,8 @@ resources:
 - strapi-db/service.yaml
 
 # Strapi Application
-- strapi-app/deployment.yaml
 - strapi-service/connection.yaml
+- strapi-app/deployment.yaml
 
 # Strapi Network
 - strapi-network/ingress.yaml
@@ -35,9 +35,13 @@ resources:
 - angular-network/ingress.yaml
 
 # MLSolid Tracking
-- mlsolid-app/deployment.yaml
+# Python Service (Backend)
 - mlsolid-service/connection.yaml
 - mlsolid-service/deployment.yaml
+
+# Go Gateway (Frontend)
+- mlsolid-app/connection.yaml
+- mlsolid-app/deployment.yaml
 
 # Redis Web Caching
 - redis-app/deployment.yaml

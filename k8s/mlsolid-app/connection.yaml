@@ -1,0 +1,15 @@
+# k8s/mlsolid-app/connection.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlsolid-gateway-service
+spec:
+  selector:
+    app: mlsolid-gateway
+  ports:
+    - name: http-rest
+      protocol: TCP
+      port: 5000       # Port used inside the cluster
+      targetPort: 5000 # Port exposed by the Go container
+      nodePort: 30500  # Port accessible from outside (Ragnar)
+  type: NodePort

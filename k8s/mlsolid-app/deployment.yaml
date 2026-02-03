@@ -2,67 +2,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mlsolid-deployment
-  namespace: go-mlops
-  labels:
-    app: mlsolid-app # Using a distinct label for the Go application
+  name: mlsolid-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mlsolid-app
+      app: mlsolid-gateway
   template:
     metadata:
       labels:
-        app: mlsolid-app
+        app: mlsolid-gateway
     spec:
-      # Pre-start: setup index file and model directory for the registry
-      initContainers:
-      - name: init-artifacts
-        image: busybox:1.28
-        command: ['sh', '-c', 'mkdir -p /artifacts/models && touch /artifacts/idx && touch /artifacts/models/v1.bin']
-        volumeMounts:
-        - name: artifacts-storage
-          mountPath: /artifacts
-      
       containers:
       - name: mlsolid-container
-        # Go application acting as gRPC client and REST server
-        image: vaporist/mlsolid:v1.3
+        # Go application acting as an HTTP Gateway to the Python gRPC service
+        image: vaporist/mlsolid:v1.4
         imagePullPolicy: Always
         ports:
         - name: rest
           containerPort: 5000 # Main REST API port for the Go application
-        
         env:
-        # --- gRPC Client Configuration ---
-        # Points to the Python gRPC server defined in mlsolid-service/connection.yaml
+        # Address of the Python gRPC service (defined in the other folder)
         - name: ML_SERVICE_URL
-          value: "mlsolid-service:50051"
-        
-        # --- Database Configuration (PostgreSQL) ---
-        - name: DATABASE_TYPE
-          value: postgres
-        - name: DATABASE_HOST
-          value: postgres-clusterip-service
-        - name: DATABASE_PORT
-          value: "5432"
-        - name: DATABASE_USER
-          value: strapiuser
-        - name: DATABASE_NAME
-          value: mlsolid_db
-        - name: DATABASE_PASSWORD
-          value: V@vrinAdm1n
-        
-        # --- System Settings ---
-        - name: TZ
-          value: Europe/Zurich
-        
-        # Mounting directly to root /artifacts as expected by binary relative path
-        volumeMounts:
-        - name: artifacts-storage
-          mountPath: /artifacts
-      
-      volumes:
-      - name: artifacts-storage
-        emptyDir: {}
+          value: "mlsolid-python-service:50051"
+        - name: REDIS_ADDR
+          value: "redis-service:6379"
+        - name: REDIS_DB
+          value: "0"
+        - name: S3_BUCKET
+          value: "mlsolid"
+        - name: S3_ENDPOINT
+          value: "minio-service:9000"
+        - name: S3_REGION
+          value: "us-east-1"
+
